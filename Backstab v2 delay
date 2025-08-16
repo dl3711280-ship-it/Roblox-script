@@ -1,130 +1,655 @@
-local Players=game:GetService("Players")
-local ReplicatedStorage=game:GetService("ReplicatedStorage")
-local RunService=game:GetService("RunService")
-local lp=Players.LocalPlayer
-local screenGui=Instance.new("ScreenGui")
-screenGui.Name="BackstabToggleGui"
-screenGui.ResetOnSpawn=false
-screenGui.Parent=lp:WaitForChild("PlayerGui")
-local toggleButton=Instance.new("TextButton")
-toggleButton.Size=UDim2.new(0,150,0,40)
-toggleButton.Position=UDim2.new(0,10,0,10)
-toggleButton.BackgroundColor3=Color3.fromRGB(30,30,30)
-toggleButton.TextColor3=Color3.fromRGB(255,255,255)
-toggleButton.Font=Enum.Font.SourceSansBold
-toggleButton.TextSize=20
-toggleButton.Text="Backstab: OFF"
-toggleButton.Parent=screenGui
-local dropdown=Instance.new("Frame")
-dropdown.Size=UDim2.new(0,150,0,120)
-dropdown.Position=UDim2.new(0,10,0,60)
-dropdown.BackgroundColor3=Color3.fromRGB(40,40,40)
-dropdown.Visible=false
-dropdown.Parent=screenGui
-local modes={"Normal","Counter","Legit"}
-local mode="Normal"
-for i,modeName in ipairs(modes)do
-    local button=Instance.new("TextButton")
-    button.Size=UDim2.new(1,0,0,40)
-    button.Position=UDim2.new(0,0,0,(i-1)*40)
-    button.BackgroundColor3=Color3.fromRGB(60,60,60)
-    button.TextColor3=Color3.fromRGB(255,255,255)
-    button.Font=Enum.Font.SourceSans
-    button.TextSize=18
-    button.Text=modeName
-    button.Parent=dropdown
-    button.MouseButton1Click:Connect(function()
-        mode=modeName
-        dropdown.Visible=false
-    end)
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Stats = game:GetService("Stats")
+local lp = Players.LocalPlayer
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "BackstabUI_Full"
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent = lp:WaitForChild("PlayerGui")
+
+local root = Instance.new("Frame")
+root.Name = "Root"
+root.AnchorPoint = Vector2.new(0,0)
+root.Size = UDim2.new(0,228,0,228)
+root.Position = UDim2.new(0,20,0,20)
+root.BackgroundColor3 = Color3.fromRGB(24,24,24)
+root.BorderSizePixel = 0
+root.Parent = screenGui
+
+local rootCorner = Instance.new("UICorner")
+rootCorner.CornerRadius = UDim.new(0,12)
+rootCorner.Parent = root
+
+local rootStroke = Instance.new("UIStroke")
+rootStroke.Thickness = 1
+rootStroke.Color = Color3.fromRGB(60,60,60)
+rootStroke.Parent = root
+
+local header = Instance.new("Frame")
+header.Name = "Header"
+header.Size = UDim2.new(1,0,0,36)
+header.BackgroundColor3 = Color3.fromRGB(18,18,18)
+header.BorderSizePixel = 0
+header.Parent = root
+
+local headerCorner = Instance.new("UICorner")
+headerCorner.CornerRadius = UDim.new(0,12)
+headerCorner.Parent = header
+
+local headerMask = Instance.new("Frame")
+headerMask.BackgroundTransparency = 1
+headerMask.Size = UDim2.new(1,0,1,0)
+headerMask.Parent = header
+
+local headerCornerMask = Instance.new("UICorner")
+headerCornerMask.CornerRadius = UDim.new(0,12)
+headerCornerMask.Parent = headerMask
+
+local title = Instance.new("TextLabel")
+title.Name = "Title"
+title.BackgroundTransparency = 1
+title.Position = UDim2.new(0,12,0,0)
+title.Size = UDim2.new(1,-84,1,0)
+title.Font = Enum.Font.SourceSansBold
+title.Text = "Backstab"
+title.TextSize = 20
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.TextColor3 = Color3.fromRGB(240,240,240)
+title.Parent = header
+
+local hideBtn = Instance.new("TextButton")
+hideBtn.Name = "HideBtn"
+hideBtn.Size = UDim2.new(0,60,0,28)
+hideBtn.Position = UDim2.new(1,-68,0,4)
+hideBtn.Text = "Hide"
+hideBtn.TextSize = 16
+hideBtn.Font = Enum.Font.SourceSansSemibold
+hideBtn.BackgroundColor3 = Color3.fromRGB(36,36,36)
+hideBtn.TextColor3 = Color3.fromRGB(255,255,255)
+hideBtn.AutoButtonColor = true
+hideBtn.Parent = header
+
+local hideCorner = Instance.new("UICorner")
+hideCorner.CornerRadius = UDim.new(0,8)
+hideCorner.Parent = hideBtn
+
+local body = Instance.new("Frame")
+body.Name = "Body"
+body.BackgroundTransparency = 1
+body.Position = UDim2.new(0,0,0,36)
+body.Size = UDim2.new(1,0,1,-36)
+body.Parent = root
+
+local padding = Instance.new("UIPadding")
+padding.PaddingTop = UDim.new(0,10)
+padding.PaddingLeft = UDim.new(0,10)
+padding.PaddingRight = UDim.new(0,10)
+padding.Parent = body
+
+local list = Instance.new("UIListLayout")
+list.FillDirection = Enum.FillDirection.Vertical
+list.HorizontalAlignment = Enum.HorizontalAlignment.Center
+list.VerticalAlignment = Enum.VerticalAlignment.Top
+list.SortOrder = Enum.SortOrder.LayoutOrder
+list.Padding = UDim.new(0,8)
+list.Parent = body
+
+local function mkRow(h)
+	local f = Instance.new("Frame")
+	f.Size = UDim2.new(1,0,0,h or 32)
+	f.BackgroundColor3 = Color3.fromRGB(28,28,28)
+	f.BorderSizePixel = 0
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0,8)
+	c.Parent = f
+	local s = Instance.new("UIStroke")
+	s.Thickness = 1
+	s.Color = Color3.fromRGB(55,55,55)
+	s.Parent = f
+	f.Parent = body
+	return f
 end
-local enabled=false
-toggleButton.MouseButton1Click:Connect(function()
-    enabled=not enabled
-    toggleButton.Text="Backstab: "..(enabled and "ON" or "OFF")
-    dropdown.Visible=enabled
-end)
-game:GetService("UserInputService").InputBegan:Connect(function(input,gpe)
-    if not gpe and input.KeyCode==Enum.KeyCode.RightShift then
-        screenGui.Enabled=not screenGui.Enabled
-    end
-end)
-local daggerRemote=ReplicatedStorage.Remotes:WaitForChild("Ability")
-local hrp=lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-lp.CharacterAdded:Connect(function(char)
-    hrp=char:WaitForChild("HumanoidRootPart")
-end)
-local lastTarget=nil
-local cooldown=false
-local range=11
-local function isBehindTarget(hrp,targetHRP)
-    if not(hrp and targetHRP)then return false end
-    local lookVector=targetHRP.CFrame.LookVector
-    local toTarget=(hrp.Position-targetHRP.Position).Unit
-    local dot=lookVector:Dot(toTarget)
-    return dot>0.5
+
+local toggleRow = mkRow(40)
+local toggleLayout = Instance.new("UIListLayout")
+toggleLayout.FillDirection = Enum.FillDirection.Horizontal
+toggleLayout.Padding = UDim.new(0,8)
+toggleLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+toggleLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+toggleLayout.Parent = toggleRow
+
+local toggleLabel = Instance.new("TextLabel")
+toggleLabel.BackgroundTransparency = 1
+toggleLabel.Size = UDim2.new(0.45,0,1,0)
+toggleLabel.Font = Enum.Font.SourceSansSemibold
+toggleLabel.Text = "Backstab"
+toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+toggleLabel.TextSize = 18
+toggleLabel.TextColor3 = Color3.fromRGB(230,230,230)
+toggleLabel.Parent = toggleRow
+
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0.5,0,0,30)
+toggleBtn.Text = "OFF"
+toggleBtn.Font = Enum.Font.SourceSansBold
+toggleBtn.TextSize = 18
+toggleBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+toggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
+toggleBtn.Parent = toggleRow
+local toggleBtnCorner = Instance.new("UICorner")
+toggleBtnCorner.CornerRadius = UDim.new(0,8)
+toggleBtnCorner.Parent = toggleBtn
+
+local rangeRow = mkRow()
+local rangeLayout = Instance.new("UIListLayout")
+rangeLayout.FillDirection = Enum.FillDirection.Horizontal
+rangeLayout.Padding = UDim.new(0,8)
+rangeLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+rangeLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+rangeLayout.Parent = rangeRow
+
+local rangeLabel = Instance.new("TextLabel")
+rangeLabel.BackgroundTransparency = 1
+rangeLabel.Size = UDim2.new(0.45,0,1,0)
+rangeLabel.Font = Enum.Font.SourceSans
+rangeLabel.Text = "Range"
+rangeLabel.TextXAlignment = Enum.TextXAlignment.Left
+rangeLabel.TextSize = 16
+rangeLabel.TextColor3 = Color3.fromRGB(220,220,220)
+rangeLabel.Parent = rangeRow
+
+local rangeBox = Instance.new("TextBox")
+rangeBox.Size = UDim2.new(0.5,0,0,28)
+rangeBox.Font = Enum.Font.SourceSans
+rangeBox.TextSize = 16
+rangeBox.PlaceholderText = "4"
+rangeBox.Text = "4"
+rangeBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+rangeBox.TextColor3 = Color3.fromRGB(255,255,255)
+rangeBox.ClearTextOnFocus = false
+rangeBox.Parent = rangeRow
+local rangeCorner = Instance.new("UICorner")
+rangeCorner.CornerRadius = UDim.new(0,8)
+rangeCorner.Parent = rangeBox
+
+local delayRow = mkRow()
+local delayLayout = Instance.new("UIListLayout")
+delayLayout.FillDirection = Enum.FillDirection.Horizontal
+delayLayout.Padding = UDim.new(0,8)
+delayLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+delayLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+delayLayout.Parent = delayRow
+
+local delayLabel = Instance.new("TextLabel")
+delayLabel.BackgroundTransparency = 1
+delayLabel.Size = UDim2.new(0.45,0,1,0)
+delayLabel.Font = Enum.Font.SourceSans
+delayLabel.Text = "Delay (s)"
+delayLabel.TextXAlignment = Enum.TextXAlignment.Left
+delayLabel.TextSize = 16
+delayLabel.TextColor3 = Color3.fromRGB(220,220,220)
+delayLabel.Parent = delayRow
+
+local delayBox = Instance.new("TextBox")
+delayBox.Size = UDim2.new(0.5,0,0,28)
+delayBox.Font = Enum.Font.SourceSans
+delayBox.TextSize = 16
+delayBox.PlaceholderText = "0.20"
+delayBox.Text = "0.20"
+delayBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+delayBox.TextColor3 = Color3.fromRGB(255,255,255)
+delayBox.ClearTextOnFocus = false
+delayBox.Parent = delayRow
+local delayCorner = Instance.new("UICorner")
+delayCorner.CornerRadius = UDim.new(0,8)
+delayCorner.Parent = delayBox
+
+local typeRow = mkRow(64)
+local typeTitle = Instance.new("TextLabel")
+typeTitle.BackgroundTransparency = 1
+typeTitle.Position = UDim2.new(0,10,0,6)
+typeTitle.Size = UDim2.new(1,-20,0,20)
+typeTitle.Font = Enum.Font.SourceSansSemibold
+typeTitle.Text = "Backstab Type"
+typeTitle.TextXAlignment = Enum.TextXAlignment.Left
+typeTitle.TextSize = 16
+typeTitle.TextColor3 = Color3.fromRGB(230,230,230)
+typeTitle.Parent = typeRow
+
+local typeBtn = Instance.new("TextButton")
+typeBtn.AnchorPoint = Vector2.new(0,0)
+typeBtn.Position = UDim2.new(0,10,0,30)
+typeBtn.Size = UDim2.new(1,-20,0,26)
+typeBtn.Text = "Normal"
+typeBtn.Font = Enum.Font.SourceSans
+typeBtn.TextSize = 16
+typeBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+typeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+typeBtn.Parent = typeRow
+local typeCorner = Instance.new("UICorner")
+typeCorner.CornerRadius = UDim.new(0,8)
+typeCorner.Parent = typeBtn
+
+local typeDrop = Instance.new("Frame")
+typeDrop.Visible = false
+typeDrop.Position = UDim2.new(0,10,0,60)
+typeDrop.Size = UDim2.new(1,-20,0,80)
+typeDrop.BackgroundColor3 = Color3.fromRGB(30,30,30)
+typeDrop.BorderSizePixel = 0
+typeDrop.Parent = typeRow
+local typeDropCorner = Instance.new("UICorner")
+typeDropCorner.CornerRadius = UDim.new(0,8)
+typeDropCorner.Parent = typeDrop
+local typeDropStroke = Instance.new("UIStroke")
+typeDropStroke.Thickness = 1
+typeDropStroke.Color = Color3.fromRGB(55,55,55)
+typeDropStroke.Parent = typeDrop
+
+local typeList = Instance.new("UIListLayout")
+typeList.Padding = UDim.new(0,4)
+typeList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+typeList.VerticalAlignment = Enum.VerticalAlignment.Top
+typeList.Parent = typeDrop
+
+local function mkTypeOpt(txt)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(1,-8,0,24)
+	b.Position = UDim2.new(0,4,0,0)
+	b.Text = txt
+	b.Font = Enum.Font.SourceSans
+	b.TextSize = 16
+	b.BackgroundColor3 = Color3.fromRGB(45,45,45)
+	b.TextColor3 = Color3.fromRGB(255,255,255)
+	b.Parent = typeDrop
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0,6)
+	c.Parent = b
+	return b
 end
-RunService.Heartbeat:Connect(function()
-    if not enabled then return end
-    if cooldown then return end
-    if not lp.Character or not hrp then return end
-    for _,killer in ipairs(Players:GetPlayers())do
-        if killer~=lp and killer.Character and killer.Character:FindFirstChild("HumanoidRootPart")then
-            local kHRP=killer.Character.HumanoidRootPart
-            local dist=(hrp.Position-kHRP.Position).Magnitude
-            if dist<=range then
-                if mode=="Legit" then
-                    if isBehindTarget(hrp,kHRP) and killer~=lastTarget then
-                        cooldown=true
-                        lastTarget=killer
-                        task.wait(0.1)
-                        local start=tick()
-                        local didDagger=false
-                        local connection
-                        connection=RunService.Heartbeat:Connect(function()
-                            if not(hrp and kHRP and kHRP.Parent)then
-                                if connection then connection:Disconnect()end
-                                return
-                            end
-                            local elapsed=tick()-start
-                            if elapsed>=0.5 then
-                                if connection then connection:Disconnect()end
-                                return
-                            end
-                            if not didDagger then
-                                didDagger=true
-                                task.wait(0.15)
-                                daggerRemote:FireServer("UseActorAbility","Dagger")
-                            end
-                        end)
-                    end
-                else
-                    if isBehindTarget(hrp,kHRP) and killer~=lastTarget then
-                        cooldown=true
-                        lastTarget=killer
-                        task.wait(0.1)
-                        local start=tick()
-                        local didDagger=false
-                        local connection
-                        connection=RunService.Heartbeat:Connect(function()
-                            if not(hrp and kHRP and kHRP.Parent)then
-                                if connection then connection:Disconnect()end
-                                return
-                            end
-                            local elapsed=tick()-start
-                            if elapsed>=0.7 then
-                                if connection then connection:Disconnect()end
-                                return
-                            end
-                            if not didDagger then
-                                didDagger=true
-                                task.wait(0.15)
-                                daggerRemote:FireServer("UseActorAbility","Dagger")
-                            end
-                        end)
-                    end
-                end
-            end
-        end
-    end
+
+local optNormal = mkTypeOpt("Normal")
+local optCounter = mkTypeOpt("Counter")
+local optLegit = mkTypeOpt("Legit")
+
+local modeRow = mkRow(64)
+local modeTitle = Instance.new("TextLabel")
+modeTitle.BackgroundTransparency = 1
+modeTitle.Position = UDim2.new(0,10,0,6)
+modeTitle.Size = UDim2.new(1,-20,0,20)
+modeTitle.Font = Enum.Font.SourceSansSemibold
+modeTitle.Text = "Mode"
+modeTitle.TextXAlignment = Enum.TextXAlignment.Left
+modeTitle.TextSize = 16
+modeTitle.TextColor3 = Color3.fromRGB(230,230,230)
+modeTitle.Parent = modeRow
+
+local modeBtn = Instance.new("TextButton")
+modeBtn.AnchorPoint = Vector2.new(0,0)
+modeBtn.Position = UDim2.new(0,10,0,30)
+modeBtn.Size = UDim2.new(1,-20,0,26)
+modeBtn.Text = "Behind"
+modeBtn.Font = Enum.Font.SourceSans
+modeBtn.TextSize = 16
+modeBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+modeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+modeBtn.Parent = modeRow
+local modeCorner = Instance.new("UICorner")
+modeCorner.CornerRadius = UDim.new(0,8)
+modeCorner.Parent = modeBtn
+
+local modeDrop = Instance.new("Frame")
+modeDrop.Visible = false
+modeDrop.Position = UDim2.new(0,10,0,60)
+modeDrop.Size = UDim2.new(1,-20,0,56)
+modeDrop.BackgroundColor3 = Color3.fromRGB(30,30,30)
+modeDrop.BorderSizePixel = 0
+modeDrop.Parent = modeRow
+local modeDropCorner = Instance.new("UICorner")
+modeDropCorner.CornerRadius = UDim.new(0,8)
+modeDropCorner.Parent = modeDrop
+local modeDropStroke = Instance.new("UIStroke")
+modeDropStroke.Thickness = 1
+modeDropStroke.Color = Color3.fromRGB(55,55,55)
+modeDropStroke.Parent = modeDrop
+
+local modeList = Instance.new("UIListLayout")
+modeList.Padding = UDim.new(0,4)
+modeList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+modeList.VerticalAlignment = Enum.VerticalAlignment.Top
+modeList.Parent = modeDrop
+
+local optBehind = mkTypeOpt("Behind")
+optBehind.Parent = modeDrop
+local optAround = mkTypeOpt("Around")
+optAround.Parent = modeDrop
+
+local legitRow = mkRow()
+local legitLayout = Instance.new("UIListLayout")
+legitLayout.FillDirection = Enum.FillDirection.Horizontal
+legitLayout.Padding = UDim.new(0,8)
+legitLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+legitLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+legitLayout.Parent = legitRow
+
+local legitLabel = Instance.new("TextLabel")
+legitLabel.BackgroundTransparency = 1
+legitLabel.Size = UDim2.new(0.45,0,1,0)
+legitLabel.Font = Enum.Font.SourceSans
+legitLabel.Text = "Legit Aimbot"
+legitLabel.TextXAlignment = Enum.TextXAlignment.Left
+legitLabel.TextSize = 16
+legitLabel.TextColor3 = Color3.fromRGB(220,220,220)
+legitLabel.Parent = legitRow
+
+local legitBtn = Instance.new("TextButton")
+legitBtn.Size = UDim2.new(0.5,0,0,28)
+legitBtn.Text = "OFF"
+legitBtn.Font = Enum.Font.SourceSans
+legitBtn.TextSize = 16
+legitBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+legitBtn.TextColor3 = Color3.fromRGB(255,255,255)
+legitBtn.Parent = legitRow
+local legitCorner = Instance.new("UICorner")
+legitCorner.CornerRadius = UDim.new(0,8)
+legitCorner.Parent = legitBtn
+
+local statusRow = mkRow()
+local statusText = Instance.new("TextLabel")
+statusText.BackgroundTransparency = 1
+statusText.Size = UDim2.new(1,-16,1,0)
+statusText.Position = UDim2.new(0,8,0,0)
+statusText.Font = Enum.Font.SourceSansItalic
+statusText.Text = "Ready"
+statusText.TextXAlignment = Enum.TextXAlignment.Left
+statusText.TextSize = 14
+statusText.TextColor3 = Color3.fromRGB(180,180,180)
+statusText.Parent = statusRow
+
+local dragging = false
+local dragStart
+local startPos
+header.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = root.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
 end)
+UserInputService.InputChanged:Connect(function(input)
+	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta = input.Position - dragStart
+		root.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
+local enabled = false
+local cooldown = false
+local lastTarget = nil
+local range = 4
+local delaySec = 0.20
+local matchFacing = false
+local attackType = "Normal"
+local mode = "Behind"
+local daggerCooldownText = nil
+local killersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
+local killerNames = {"Jason","c00lkidd","JohnDoe","1x1x1x1","Noli"}
+local daggerRemote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
+
+local function setToggle(state)
+	enabled = state
+	toggleBtn.Text = state and "ON" or "OFF"
+	toggleBtn.BackgroundColor3 = state and Color3.fromRGB(50,150,50) or Color3.fromRGB(50,50,50)
+end
+
+toggleBtn.MouseButton1Click:Connect(function()
+	setToggle(not enabled)
+end)
+
+hideBtn.MouseButton1Click:Connect(function()
+	local vis = body.Visible
+	body.Visible = not vis
+	hideBtn.Text = vis and "Show" or "Hide"
+end)
+
+typeBtn.MouseButton1Click:Connect(function()
+	typeDrop.Visible = not typeDrop.Visible
+	modeDrop.Visible = false
+end)
+modeBtn.MouseButton1Click:Connect(function()
+	modeDrop.Visible = not modeDrop.Visible
+	typeDrop.Visible = false
+end)
+
+optNormal.MouseButton1Click:Connect(function()
+	attackType = "Normal"
+	typeBtn.Text = "Normal"
+	typeDrop.Visible = false
+	legitRow.Visible = true
+end)
+optCounter.MouseButton1Click:Connect(function()
+	attackType = "Counter"
+	typeBtn.Text = "Counter"
+	typeDrop.Visible = false
+	legitRow.Visible = true
+end)
+optLegit.MouseButton1Click:Connect(function()
+	attackType = "Legit"
+	typeBtn.Text = "Legit"
+	typeDrop.Visible = false
+	legitRow.Visible = true
+end)
+
+optBehind.MouseButton1Click:Connect(function()
+	mode = "Behind"
+	modeBtn.Text = "Behind"
+	modeDrop.Visible = false
+end)
+optAround.MouseButton1Click:Connect(function()
+	mode = "Around"
+	modeBtn.Text = "Around"
+	modeDrop.Visible = false
+end)
+
+legitBtn.MouseButton1Click:Connect(function()
+	matchFacing = not matchFacing
+	legitBtn.Text = matchFacing and "ON" or "OFF"
+	legitBtn.BackgroundColor3 = matchFacing and Color3.fromRGB(50,150,50) or Color3.fromRGB(40,40,40)
+end)
+
+rangeBox.FocusLost:Connect(function()
+	local v = tonumber(rangeBox.Text)
+	if v and v >= 1 then
+		range = v
+		rangeBox.Text = tostring(v)
+	else
+		rangeBox.Text = tostring(range)
+		statusText.Text = "Invalid range"
+	end
+end)
+
+delayBox.FocusLost:Connect(function()
+	local v = tonumber(delayBox.Text)
+	if v and v >= 0 then
+		delaySec = v
+		delayBox.Text = string.format("%.2f", v)
+	else
+		delayBox.Text = string.format("%.2f", delaySec)
+		statusText.Text = "Invalid delay"
+	end
+end)
+
+local function refreshDaggerRef()
+	local gui = lp:FindFirstChild("PlayerGui")
+	if not gui then
+		daggerCooldownText = nil
+		return
+	end
+	local mainui = gui:FindFirstChild("MainUI")
+	if mainui then
+		local ac = mainui:FindFirstChild("AbilityContainer")
+		if ac then
+			local d = ac:FindFirstChild("Dagger")
+			if d then
+				daggerCooldownText = d:FindFirstChild("CooldownTime")
+				return
+			end
+		end
+	end
+	daggerCooldownText = nil
+end
+
+lp.PlayerGui.DescendantAdded:Connect(refreshDaggerRef)
+lp.PlayerGui.DescendantRemoving:Connect(function(obj)
+	if obj == daggerCooldownText then
+		daggerCooldownText = nil
+	end
+end)
+refreshDaggerRef()
+
+local counterAnimIDs = {
+	"126830014841198","126355327951215","121086746534252","18885909645",
+	"98456918873918","105458270463374","83829782357897","125403313786645",
+	"118298475669935","82113744478546","70371667919898","99135633258223",
+	"97167027849946","109230267448394","139835501033932","126896426760253",
+	"109667959938617","126681776859538","129976080405072","121293883585738",
+	"81639435858902","137314737492715","92173139187970"
+}
+
+local counterSet = {}
+for _,id in ipairs(counterAnimIDs) do
+	counterSet[id] = true
+end
+
+local function killerPlayingCounterAnim(model)
+	local hum = model:FindFirstChildOfClass("Humanoid")
+	if not hum then return false end
+	local animator = hum:FindFirstChildOfClass("Animator")
+	if not animator then return false end
+	for _,track in ipairs(animator:GetPlayingAnimationTracks()) do
+		if track.Animation and track.Animation.AnimationId then
+			local num = tostring(track.Animation.AnimationId:match("%d+") or "")
+			if counterSet[num] then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+local function isBehindTarget(hrp, targetHRP)
+	local distance = (hrp.Position - targetHRP.Position).Magnitude
+	if distance > range then return false end
+	if mode == "Around" then
+		return true
+	else
+		local dir = -targetHRP.CFrame.LookVector
+		local toP = (hrp.Position - targetHRP.Position)
+		return toP:Dot(dir) > 0.5
+	end
+end
+
+local lastFire = 0
+
+RunService.RenderStepped:Connect(function()
+	if not enabled then return end
+	if not daggerCooldownText or not daggerCooldownText.Parent then return end
+	if tonumber(daggerCooldownText.Text) then return end
+	local char = lp.Character
+	if not char then return end
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+
+	if (tick() - lastFire) < delaySec then return end
+
+	for _,name in ipairs(killerNames) do
+		local killer = killersFolder:FindFirstChild(name)
+		if killer then
+			local kHRP = killer:FindFirstChild("HumanoidRootPart")
+			if kHRP then
+				if attackType == "Legit" then
+					local dist = (kHRP.Position - hrp.Position).Magnitude
+					if dist <= range then
+						if matchFacing then
+							hrp.CFrame = CFrame.new(hrp.Position, hrp.Position + kHRP.CFrame.LookVector)
+						end
+						if mode == "Behind" then
+							local dirTo = (kHRP.Position - hrp.Position).Unit
+							local dot = hrp.CFrame.LookVector:Dot(dirTo)
+							if dot > 0.6 then
+								statusText.Text = "Blocked: target in front"
+								return
+							end
+						end
+						daggerRemote:FireServer("UseActorAbility","Dagger")
+						lastFire = tick()
+						statusText.Text = "Stab (Legit)"
+					end
+					return
+				end
+
+				if attackType == "Counter" and not killerPlayingCounterAnim(killer) then
+					continue
+				end
+
+				if isBehindTarget(hrp, kHRP) and killer ~= lastTarget then
+					lastTarget = killer
+					local start = tick()
+					local did = false
+					local hb
+					hb = RunService.Heartbeat:Connect(function()
+						if not char or not char.Parent or not kHRP or not kHRP.Parent then
+							if hb then hb:Disconnect() end
+							return
+						end
+						if (tick() - start) >= 0.5 then
+							if hb then hb:Disconnect() end
+							return
+						end
+						local ping = tonumber(Stats.Network.ServerStatsItem["Data Ping"]:GetValueString():match("%d+")) or 50
+						local ps = ping/1000
+						local vel = kHRP.Velocity
+						local moveDir = vel.Magnitude > 0.1 and vel.Unit or Vector3.new()
+						local off = moveDir * (ps * vel.Magnitude)
+						local predicted = kHRP.Position + off
+						local tpos
+						if mode == "Behind" then
+							tpos = predicted - (kHRP.CFrame.LookVector * 0.3)
+						else
+							local rightVec = kHRP.CFrame.RightVector
+							local rel = (hrp.Position - kHRP.Position)
+							local lateralSpeed = vel:Dot(rightVec)
+							local baseOffset = (rel.Magnitude > 0.1) and rel.Unit * 0.3 or Vector3.new()
+							local lateralOffset = rightVec * lateralSpeed * 0.3
+							tpos = predicted + baseOffset + lateralOffset
+						end
+						hrp.CFrame = CFrame.new(tpos, tpos + kHRP.CFrame.LookVector)
+						if not did then
+							did = true
+							daggerRemote:FireServer("UseActorAbility","Dagger")
+							lastFire = tick()
+							statusText.Text = "Stab ("..attackType..")"
+						end
+					end)
+					task.delay(2,function()
+						RunService.Heartbeat:Wait()
+						while kHRP and hrp and isBehindTarget(hrp,kHRP) do
+							RunService.Heartbeat:Wait()
+						end
+						lastTarget = nil
+					end)
+					break
+				end
+			end
+		end
+	end
+end)
+```0
