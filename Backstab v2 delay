@@ -14,117 +14,197 @@ screenGui.Parent = lp:WaitForChild("PlayerGui")
 local root = Instance.new("Frame")
 root.Name = "Root"
 root.AnchorPoint = Vector2.new(0,0)
-root.Size = UDim2.new(0,228,0,228)
+root.Size = UDim2.new(0,300,0,340)
 root.Position = UDim2.new(0,20,0,20)
-root.BackgroundColor3 = Color3.fromRGB(24,24,24)
+root.BackgroundColor3 = Color3.fromRGB(20,20,22)
 root.BorderSizePixel = 0
 root.Parent = screenGui
 
 local rootCorner = Instance.new("UICorner")
-rootCorner.CornerRadius = UDim.new(0,12)
+rootCorner.CornerRadius = UDim.new(0,14)
 rootCorner.Parent = root
 
 local rootStroke = Instance.new("UIStroke")
 rootStroke.Thickness = 1
-rootStroke.Color = Color3.fromRGB(60,60,60)
+rootStroke.Color = Color3.fromRGB(58,58,62)
+rootStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 rootStroke.Parent = root
+
+local glass = Instance.new("Frame")
+glass.BackgroundColor3 = Color3.fromRGB(26,26,30)
+glass.Size = UDim2.new(1,-12,1,-12)
+glass.Position = UDim2.new(0,6,0,6)
+glass.BorderSizePixel = 0
+glass.Parent = root
+
+local glassCorner = Instance.new("UICorner")
+glassCorner.CornerRadius = UDim.new(0,12)
+glassCorner.Parent = glass
+
+local glassStroke = Instance.new("UIStroke")
+glassStroke.Thickness = 1
+glassStroke.Color = Color3.fromRGB(46,46,52)
+glassStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+glassStroke.Parent = glass
 
 local header = Instance.new("Frame")
 header.Name = "Header"
-header.Size = UDim2.new(1,0,0,36)
-header.BackgroundColor3 = Color3.fromRGB(18,18,18)
+header.Size = UDim2.new(1,0,0,44)
+header.BackgroundColor3 = Color3.fromRGB(18,18,20)
 header.BorderSizePixel = 0
-header.Parent = root
+header.Parent = glass
 
 local headerCorner = Instance.new("UICorner")
 headerCorner.CornerRadius = UDim.new(0,12)
 headerCorner.Parent = header
 
-local headerMask = Instance.new("Frame")
-headerMask.BackgroundTransparency = 1
-headerMask.Size = UDim2.new(1,0,1,0)
-headerMask.Parent = header
+local headerShadow = Instance.new("Frame")
+headerShadow.BackgroundColor3 = Color3.fromRGB(0,0,0)
+headerShadow.BackgroundTransparency = 0.65
+headerShadow.BorderSizePixel = 0
+headerShadow.Size = UDim2.new(1,0,0,2)
+headerShadow.Position = UDim2.new(0,0,1,-2)
+headerShadow.Parent = header
 
-local headerCornerMask = Instance.new("UICorner")
-headerCornerMask.CornerRadius = UDim.new(0,12)
-headerCornerMask.Parent = headerMask
+local headerPad = Instance.new("UIPadding")
+headerPad.PaddingLeft = UDim.new(0,12)
+headerPad.PaddingRight = UDim.new(0,10)
+headerPad.Parent = header
+
+local icon = Instance.new("ImageLabel")
+icon.BackgroundTransparency = 1
+icon.Size = UDim2.new(0,22,0,22)
+icon.Position = UDim2.new(0,4,0,11)
+icon.Image = "rbxassetid://6031265975"
+icon.ImageTransparency = 0.05
+icon.Parent = header
 
 local title = Instance.new("TextLabel")
 title.Name = "Title"
 title.BackgroundTransparency = 1
-title.Position = UDim2.new(0,12,0,0)
-title.Size = UDim2.new(1,-84,1,0)
+title.Position = UDim2.new(0,32,0,0)
+title.Size = UDim2.new(1,-140,1,0)
 title.Font = Enum.Font.SourceSansBold
 title.Text = "Backstab"
 title.TextSize = 20
 title.TextXAlignment = Enum.TextXAlignment.Left
-title.TextColor3 = Color3.fromRGB(240,240,240)
+title.TextColor3 = Color3.fromRGB(238,238,242)
 title.Parent = header
 
-local hideBtn = Instance.new("TextButton")
-hideBtn.Name = "HideBtn"
-hideBtn.Size = UDim2.new(0,60,0,28)
-hideBtn.Position = UDim2.new(1,-68,0,4)
-hideBtn.Text = "Hide"
-hideBtn.TextSize = 16
-hideBtn.Font = Enum.Font.SourceSansSemibold
-hideBtn.BackgroundColor3 = Color3.fromRGB(36,36,36)
-hideBtn.TextColor3 = Color3.fromRGB(255,255,255)
-hideBtn.AutoButtonColor = true
-hideBtn.Parent = header
+local topBtns = Instance.new("Frame")
+topBtns.BackgroundTransparency = 1
+topBtns.AnchorPoint = Vector2.new(1,0)
+topBtns.Position = UDim2.new(1,0,0,0)
+topBtns.Size = UDim2.new(0,120,1,0)
+topBtns.Parent = header
 
-local hideCorner = Instance.new("UICorner")
-hideCorner.CornerRadius = UDim.new(0,8)
-hideCorner.Parent = hideBtn
+local topBtnsList = Instance.new("UIListLayout")
+topBtnsList.FillDirection = Enum.FillDirection.Horizontal
+topBtnsList.HorizontalAlignment = Enum.HorizontalAlignment.Right
+topBtnsList.VerticalAlignment = Enum.VerticalAlignment.Center
+topBtnsList.Padding = UDim.new(0,6)
+topBtnsList.Parent = topBtns
+
+local function mkTopBtn(txt)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(0,52,0,28)
+	b.Text = txt
+	b.TextSize = 16
+	b.Font = Enum.Font.SourceSansSemibold
+	b.BackgroundColor3 = Color3.fromRGB(40,40,44)
+	b.TextColor3 = Color3.fromRGB(255,255,255)
+	b.AutoButtonColor = true
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0,8)
+	c.Parent = b
+	local s = Instance.new("UIStroke")
+	s.Thickness = 1
+	s.Color = Color3.fromRGB(64,64,68)
+	s.Parent = b
+	b.Parent = topBtns
+	return b
+end
+
+local hideBtn = mkTopBtn("Hide")
+local pinBtn = mkTopBtn("Pin")
 
 local body = Instance.new("Frame")
 body.Name = "Body"
 body.BackgroundTransparency = 1
-body.Position = UDim2.new(0,0,0,36)
-body.Size = UDim2.new(1,0,1,-36)
-body.Parent = root
+body.Position = UDim2.new(0,0,0,44)
+body.Size = UDim2.new(1,0,1,-100)
+body.Parent = glass
 
-local padding = Instance.new("UIPadding")
-padding.PaddingTop = UDim.new(0,10)
-padding.PaddingLeft = UDim.new(0,10)
-padding.PaddingRight = UDim.new(0,10)
-padding.Parent = body
+local bodyPad = Instance.new("UIPadding")
+bodyPad.PaddingTop = UDim.new(0,12)
+bodyPad.PaddingLeft = UDim.new(0,12)
+bodyPad.PaddingRight = UDim.new(0,12)
+bodyPad.Parent = body
 
-local list = Instance.new("UIListLayout")
-list.FillDirection = Enum.FillDirection.Vertical
-list.HorizontalAlignment = Enum.HorizontalAlignment.Center
-list.VerticalAlignment = Enum.VerticalAlignment.Top
-list.SortOrder = Enum.SortOrder.LayoutOrder
-list.Padding = UDim.new(0,8)
-list.Parent = body
+local bodyList = Instance.new("UIListLayout")
+bodyList.FillDirection = Enum.FillDirection.Vertical
+bodyList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+bodyList.VerticalAlignment = Enum.VerticalAlignment.Top
+bodyList.SortOrder = Enum.SortOrder.LayoutOrder
+bodyList.Padding = UDim.new(0,10)
+bodyList.Parent = body
+
+local sep = Instance.new("Frame")
+sep.BackgroundColor3 = Color3.fromRGB(46,46,52)
+sep.Size = UDim2.new(1,0,0,1)
+sep.BorderSizePixel = 0
+sep.Parent = body
+
+local function mkSection(titleText, h)
+	local outer = Instance.new("Frame")
+	outer.Size = UDim2.new(1,0,0,h or 56)
+	outer.BackgroundColor3 = Color3.fromRGB(30,30,34)
+	outer.BorderSizePixel = 0
+	local oc = Instance.new("UICorner"); oc.CornerRadius = UDim.new(0,10); oc.Parent = outer
+	local os = Instance.new("UIStroke"); os.Thickness = 1; os.Color = Color3.fromRGB(62,62,68); os.Parent = outer
+	local pad = Instance.new("UIPadding"); pad.PaddingLeft = UDim.new(0,10); pad.PaddingRight = UDim.new(0,10); pad.Parent = outer
+	local t = Instance.new("TextLabel")
+	t.BackgroundTransparency = 1
+	t.Size = UDim2.new(1,0,0,20)
+	t.Position = UDim2.new(0,0,0,6)
+	t.Font = Enum.Font.SourceSansSemibold
+	t.Text = titleText
+	t.TextSize = 16
+	t.TextXAlignment = Enum.TextXAlignment.Left
+	t.TextColor3 = Color3.fromRGB(232,232,236)
+	t.Parent = outer
+	return outer, t
+end
 
 local function mkRow(h)
 	local f = Instance.new("Frame")
-	f.Size = UDim2.new(1,0,0,h or 32)
-	f.BackgroundColor3 = Color3.fromRGB(28,28,28)
+	f.Size = UDim2.new(1,0,0,h or 36)
+	f.BackgroundColor3 = Color3.fromRGB(36,36,40)
 	f.BorderSizePixel = 0
-	local c = Instance.new("UICorner")
-	c.CornerRadius = UDim.new(0,8)
-	c.Parent = f
-	local s = Instance.new("UIStroke")
-	s.Thickness = 1
-	s.Color = Color3.fromRGB(55,55,55)
-	s.Parent = f
+	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0,8); c.Parent = f
+	local s = Instance.new("UIStroke"); s.Thickness = 1; s.Color = Color3.fromRGB(66,66,72); s.Parent = f
 	f.Parent = body
 	return f
 end
 
-local toggleRow = mkRow(40)
+local toggleSection = mkSection("Master",72)
+toggleSection.Parent = body
+
+local toggleRow = Instance.new("Frame")
+toggleRow.Size = UDim2.new(1,0,0,32)
+toggleRow.BackgroundTransparency = 1
+toggleRow.Parent = toggleSection
+
 local toggleLayout = Instance.new("UIListLayout")
 toggleLayout.FillDirection = Enum.FillDirection.Horizontal
-toggleLayout.Padding = UDim.new(0,8)
+toggleLayout.Padding = UDim.new(0,10)
 toggleLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 toggleLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 toggleLayout.Parent = toggleRow
 
 local toggleLabel = Instance.new("TextLabel")
 toggleLabel.BackgroundTransparency = 1
-toggleLabel.Size = UDim2.new(0.45,0,1,0)
+toggleLabel.Size = UDim2.new(0.55,0,1,0)
 toggleLabel.Font = Enum.Font.SourceSansSemibold
 toggleLabel.Text = "Backstab"
 toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -133,141 +213,157 @@ toggleLabel.TextColor3 = Color3.fromRGB(230,230,230)
 toggleLabel.Parent = toggleRow
 
 local toggleBtn = Instance.new("TextButton")
-toggleBtn.Size = UDim2.new(0.5,0,0,30)
+toggleBtn.Size = UDim2.new(0.35,0,0,30)
 toggleBtn.Text = "OFF"
 toggleBtn.Font = Enum.Font.SourceSansBold
 toggleBtn.TextSize = 18
-toggleBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(54,54,60)
 toggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
 toggleBtn.Parent = toggleRow
 local toggleBtnCorner = Instance.new("UICorner")
 toggleBtnCorner.CornerRadius = UDim.new(0,8)
 toggleBtnCorner.Parent = toggleBtn
+local toggleBtnStroke = Instance.new("UIStroke")
+toggleBtnStroke.Thickness = 1
+toggleBtnStroke.Color = Color3.fromRGB(76,76,84)
+toggleBtnStroke.Parent = toggleBtn
 
-local rangeRow = mkRow()
+local rangeSection = mkSection("Distance",70)
+rangeSection.Parent = body
+local rangeRow = Instance.new("Frame")
+rangeRow.Size = UDim2.new(1,0,0,32)
+rangeRow.BackgroundTransparency = 1
+rangeRow.Parent = rangeSection
 local rangeLayout = Instance.new("UIListLayout")
 rangeLayout.FillDirection = Enum.FillDirection.Horizontal
-rangeLayout.Padding = UDim.new(0,8)
+rangeLayout.Padding = UDim.new(0,10)
 rangeLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 rangeLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 rangeLayout.Parent = rangeRow
-
 local rangeLabel = Instance.new("TextLabel")
 rangeLabel.BackgroundTransparency = 1
-rangeLabel.Size = UDim2.new(0.45,0,1,0)
+rangeLabel.Size = UDim2.new(0.55,0,1,0)
 rangeLabel.Font = Enum.Font.SourceSans
 rangeLabel.Text = "Range"
 rangeLabel.TextXAlignment = Enum.TextXAlignment.Left
 rangeLabel.TextSize = 16
 rangeLabel.TextColor3 = Color3.fromRGB(220,220,220)
 rangeLabel.Parent = rangeRow
-
 local rangeBox = Instance.new("TextBox")
-rangeBox.Size = UDim2.new(0.5,0,0,28)
+rangeBox.Size = UDim2.new(0.35,0,0,28)
 rangeBox.Font = Enum.Font.SourceSans
 rangeBox.TextSize = 16
 rangeBox.PlaceholderText = "4"
 rangeBox.Text = "4"
-rangeBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+rangeBox.BackgroundColor3 = Color3.fromRGB(42,42,48)
 rangeBox.TextColor3 = Color3.fromRGB(255,255,255)
 rangeBox.ClearTextOnFocus = false
 rangeBox.Parent = rangeRow
 local rangeCorner = Instance.new("UICorner")
 rangeCorner.CornerRadius = UDim.new(0,8)
 rangeCorner.Parent = rangeBox
+local rangeStroke = Instance.new("UIStroke")
+rangeStroke.Thickness = 1
+rangeStroke.Color = Color3.fromRGB(70,70,78)
+rangeStroke.Parent = rangeBox
 
-local delayRow = mkRow()
+local delaySection = mkSection("Timing",70)
+delaySection.Parent = body
+local delayRow = Instance.new("Frame")
+delayRow.Size = UDim2.new(1,0,0,32)
+delayRow.BackgroundTransparency = 1
+delayRow.Parent = delaySection
 local delayLayout = Instance.new("UIListLayout")
 delayLayout.FillDirection = Enum.FillDirection.Horizontal
-delayLayout.Padding = UDim.new(0,8)
+delayLayout.Padding = UDim.new(0,10)
 delayLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 delayLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 delayLayout.Parent = delayRow
-
 local delayLabel = Instance.new("TextLabel")
 delayLabel.BackgroundTransparency = 1
-delayLabel.Size = UDim2.new(0.45,0,1,0)
+delayLabel.Size = UDim2.new(0.55,0,1,0)
 delayLabel.Font = Enum.Font.SourceSans
 delayLabel.Text = "Delay (s)"
 delayLabel.TextXAlignment = Enum.TextXAlignment.Left
 delayLabel.TextSize = 16
 delayLabel.TextColor3 = Color3.fromRGB(220,220,220)
 delayLabel.Parent = delayRow
-
 local delayBox = Instance.new("TextBox")
-delayBox.Size = UDim2.new(0.5,0,0,28)
+delayBox.Size = UDim2.new(0.35,0,0,28)
 delayBox.Font = Enum.Font.SourceSans
 delayBox.TextSize = 16
 delayBox.PlaceholderText = "0.20"
 delayBox.Text = "0.20"
-delayBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+delayBox.BackgroundColor3 = Color3.fromRGB(42,42,48)
 delayBox.TextColor3 = Color3.fromRGB(255,255,255)
 delayBox.ClearTextOnFocus = false
 delayBox.Parent = delayRow
 local delayCorner = Instance.new("UICorner")
 delayCorner.CornerRadius = UDim.new(0,8)
 delayCorner.Parent = delayBox
+local delayStroke = Instance.new("UIStroke")
+delayStroke.Thickness = 1
+delayStroke.Color = Color3.fromRGB(70,70,78)
+delayStroke.Parent = delayBox
 
-local typeRow = mkRow(64)
-local typeTitle = Instance.new("TextLabel")
-typeTitle.BackgroundTransparency = 1
-typeTitle.Position = UDim2.new(0,10,0,6)
-typeTitle.Size = UDim2.new(1,-20,0,20)
-typeTitle.Font = Enum.Font.SourceSansSemibold
-typeTitle.Text = "Backstab Type"
-typeTitle.TextXAlignment = Enum.TextXAlignment.Left
-typeTitle.TextSize = 16
-typeTitle.TextColor3 = Color3.fromRGB(230,230,230)
-typeTitle.Parent = typeRow
-
+local typeSection, typeTitle = mkSection("Backstab Type",114)
+typeSection.Parent = body
 local typeBtn = Instance.new("TextButton")
 typeBtn.AnchorPoint = Vector2.new(0,0)
 typeBtn.Position = UDim2.new(0,10,0,30)
-typeBtn.Size = UDim2.new(1,-20,0,26)
+typeBtn.Size = UDim2.new(1,-20,0,30)
 typeBtn.Text = "Normal"
 typeBtn.Font = Enum.Font.SourceSans
 typeBtn.TextSize = 16
-typeBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+typeBtn.BackgroundColor3 = Color3.fromRGB(42,42,48)
 typeBtn.TextColor3 = Color3.fromRGB(255,255,255)
-typeBtn.Parent = typeRow
+typeBtn.Parent = typeSection
 local typeCorner = Instance.new("UICorner")
 typeCorner.CornerRadius = UDim.new(0,8)
 typeCorner.Parent = typeBtn
+local typeStroke = Instance.new("UIStroke")
+typeStroke.Thickness = 1
+typeStroke.Color = Color3.fromRGB(70,70,78)
+typeStroke.Parent = typeBtn
 
 local typeDrop = Instance.new("Frame")
 typeDrop.Visible = false
-typeDrop.Position = UDim2.new(0,10,0,60)
-typeDrop.Size = UDim2.new(1,-20,0,80)
-typeDrop.BackgroundColor3 = Color3.fromRGB(30,30,30)
+typeDrop.Position = UDim2.new(0,10,0,66)
+typeDrop.Size = UDim2.new(1,-20,0,68)
+typeDrop.BackgroundColor3 = Color3.fromRGB(34,34,40)
 typeDrop.BorderSizePixel = 0
-typeDrop.Parent = typeRow
+typeDrop.Parent = typeSection
 local typeDropCorner = Instance.new("UICorner")
 typeDropCorner.CornerRadius = UDim.new(0,8)
 typeDropCorner.Parent = typeDrop
 local typeDropStroke = Instance.new("UIStroke")
 typeDropStroke.Thickness = 1
-typeDropStroke.Color = Color3.fromRGB(55,55,55)
+typeDropStroke.Color = Color3.fromRGB(66,66,72)
 typeDropStroke.Parent = typeDrop
 
 local typeList = Instance.new("UIListLayout")
-typeList.Padding = UDim.new(0,4)
+typeList.Padding = UDim.new(0,6)
 typeList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 typeList.VerticalAlignment = Enum.VerticalAlignment.Top
 typeList.Parent = typeDrop
 
 local function mkTypeOpt(txt)
 	local b = Instance.new("TextButton")
-	b.Size = UDim2.new(1,-8,0,24)
+	b.Size = UDim2.new(1,-8,0,26)
 	b.Position = UDim2.new(0,4,0,0)
 	b.Text = txt
 	b.Font = Enum.Font.SourceSans
 	b.TextSize = 16
-	b.BackgroundColor3 = Color3.fromRGB(45,45,45)
+	b.BackgroundColor3 = Color3.fromRGB(46,46,54)
 	b.TextColor3 = Color3.fromRGB(255,255,255)
 	b.Parent = typeDrop
 	local c = Instance.new("UICorner")
 	c.CornerRadius = UDim.new(0,6)
 	c.Parent = b
+	local s = Instance.new("UIStroke")
+	s.Thickness = 1
+	s.Color = Color3.fromRGB(74,74,82)
+	s.Parent = b
 	return b
 end
 
@@ -275,49 +371,43 @@ local optNormal = mkTypeOpt("Normal")
 local optCounter = mkTypeOpt("Counter")
 local optLegit = mkTypeOpt("Legit")
 
-local modeRow = mkRow(64)
-local modeTitle = Instance.new("TextLabel")
-modeTitle.BackgroundTransparency = 1
-modeTitle.Position = UDim2.new(0,10,0,6)
-modeTitle.Size = UDim2.new(1,-20,0,20)
-modeTitle.Font = Enum.Font.SourceSansSemibold
-modeTitle.Text = "Mode"
-modeTitle.TextXAlignment = Enum.TextXAlignment.Left
-modeTitle.TextSize = 16
-modeTitle.TextColor3 = Color3.fromRGB(230,230,230)
-modeTitle.Parent = modeRow
-
+local modeSection = mkSection("Mode",108)
+modeSection.Parent = body
 local modeBtn = Instance.new("TextButton")
 modeBtn.AnchorPoint = Vector2.new(0,0)
 modeBtn.Position = UDim2.new(0,10,0,30)
-modeBtn.Size = UDim2.new(1,-20,0,26)
+modeBtn.Size = UDim2.new(1,-20,0,30)
 modeBtn.Text = "Behind"
 modeBtn.Font = Enum.Font.SourceSans
 modeBtn.TextSize = 16
-modeBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+modeBtn.BackgroundColor3 = Color3.fromRGB(42,42,48)
 modeBtn.TextColor3 = Color3.fromRGB(255,255,255)
-modeBtn.Parent = modeRow
+modeBtn.Parent = modeSection
 local modeCorner = Instance.new("UICorner")
 modeCorner.CornerRadius = UDim.new(0,8)
 modeCorner.Parent = modeBtn
+local modeStroke = Instance.new("UIStroke")
+modeStroke.Thickness = 1
+modeStroke.Color = Color3.fromRGB(70,70,78)
+modeStroke.Parent = modeBtn
 
 local modeDrop = Instance.new("Frame")
 modeDrop.Visible = false
-modeDrop.Position = UDim2.new(0,10,0,60)
+modeDrop.Position = UDim2.new(0,10,0,66)
 modeDrop.Size = UDim2.new(1,-20,0,56)
-modeDrop.BackgroundColor3 = Color3.fromRGB(30,30,30)
+modeDrop.BackgroundColor3 = Color3.fromRGB(34,34,40)
 modeDrop.BorderSizePixel = 0
-modeDrop.Parent = modeRow
+modeDrop.Parent = modeSection
 local modeDropCorner = Instance.new("UICorner")
 modeDropCorner.CornerRadius = UDim.new(0,8)
 modeDropCorner.Parent = modeDrop
 local modeDropStroke = Instance.new("UIStroke")
 modeDropStroke.Thickness = 1
-modeDropStroke.Color = Color3.fromRGB(55,55,55)
+modeDropStroke.Color = Color3.fromRGB(66,66,72)
 modeDropStroke.Parent = modeDrop
 
 local modeList = Instance.new("UIListLayout")
-modeList.Padding = UDim.new(0,4)
+modeList.Padding = UDim.new(0,6)
 modeList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 modeList.VerticalAlignment = Enum.VerticalAlignment.Top
 modeList.Parent = modeDrop
@@ -327,46 +417,71 @@ optBehind.Parent = modeDrop
 local optAround = mkTypeOpt("Around")
 optAround.Parent = modeDrop
 
-local legitRow = mkRow()
+local legitSection = mkSection("Legit Aimbot",70)
+legitSection.Parent = body
+local legitRow = Instance.new("Frame")
+legitRow.Size = UDim2.new(1,0,0,32)
+legitRow.BackgroundTransparency = 1
+legitRow.Parent = legitSection
 local legitLayout = Instance.new("UIListLayout")
 legitLayout.FillDirection = Enum.FillDirection.Horizontal
-legitLayout.Padding = UDim.new(0,8)
+legitLayout.Padding = UDim.new(0,10)
 legitLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 legitLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 legitLayout.Parent = legitRow
-
 local legitLabel = Instance.new("TextLabel")
 legitLabel.BackgroundTransparency = 1
-legitLabel.Size = UDim2.new(0.45,0,1,0)
+legitLabel.Size = UDim2.new(0.55,0,1,0)
 legitLabel.Font = Enum.Font.SourceSans
 legitLabel.Text = "Legit Aimbot"
 legitLabel.TextXAlignment = Enum.TextXAlignment.Left
 legitLabel.TextSize = 16
 legitLabel.TextColor3 = Color3.fromRGB(220,220,220)
 legitLabel.Parent = legitRow
-
 local legitBtn = Instance.new("TextButton")
-legitBtn.Size = UDim2.new(0.5,0,0,28)
+legitBtn.Size = UDim2.new(0.35,0,0,28)
 legitBtn.Text = "OFF"
 legitBtn.Font = Enum.Font.SourceSans
 legitBtn.TextSize = 16
-legitBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+legitBtn.BackgroundColor3 = Color3.fromRGB(42,42,48)
 legitBtn.TextColor3 = Color3.fromRGB(255,255,255)
 legitBtn.Parent = legitRow
 local legitCorner = Instance.new("UICorner")
 legitCorner.CornerRadius = UDim.new(0,8)
 legitCorner.Parent = legitBtn
+local legitStroke = Instance.new("UIStroke")
+legitStroke.Thickness = 1
+legitStroke.Color = Color3.fromRGB(70,70,78)
+legitStroke.Parent = legitBtn
 
-local statusRow = mkRow()
+local footer = Instance.new("Frame")
+footer.BackgroundColor3 = Color3.fromRGB(18,18,20)
+footer.BorderSizePixel = 0
+footer.Size = UDim2.new(1,0,0,56)
+footer.Position = UDim2.new(0,0,1,-56)
+footer.Parent = glass
+
+local footerTop = Instance.new("Frame")
+footerTop.BackgroundColor3 = Color3.fromRGB(46,46,52)
+footerTop.BorderSizePixel = 0
+footerTop.Size = UDim2.new(1,0,0,1)
+footerTop.Position = UDim2.new(0,0,0,0)
+footerTop.Parent = footer
+
+local statusRow = Instance.new("Frame")
+statusRow.BackgroundTransparency = 1
+statusRow.Size = UDim2.new(1,-16,1,0)
+statusRow.Position = UDim2.new(0,8,0,0)
+statusRow.Parent = footer
+
 local statusText = Instance.new("TextLabel")
 statusText.BackgroundTransparency = 1
-statusText.Size = UDim2.new(1,-16,1,0)
-statusText.Position = UDim2.new(0,8,0,0)
+statusText.Size = UDim2.new(1,0,1,0)
 statusText.Font = Enum.Font.SourceSansItalic
 statusText.Text = "Ready"
 statusText.TextXAlignment = Enum.TextXAlignment.Left
 statusText.TextSize = 14
-statusText.TextColor3 = Color3.fromRGB(180,180,180)
+statusText.TextColor3 = Color3.fromRGB(186,186,192)
 statusText.Parent = statusRow
 
 local dragging = false
@@ -391,6 +506,13 @@ UserInputService.InputChanged:Connect(function(input)
 	end
 end)
 
+local pinned = false
+pinBtn.MouseButton1Click:Connect(function()
+	pinned = not pinned
+	pinBtn.Text = pinned and "Pinned" or "Pin"
+	screenGui.IgnoreGuiInset = pinned
+end)
+
 local enabled = false
 local cooldown = false
 local lastTarget = nil
@@ -407,7 +529,7 @@ local daggerRemote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net
 local function setToggle(state)
 	enabled = state
 	toggleBtn.Text = state and "ON" or "OFF"
-	toggleBtn.BackgroundColor3 = state and Color3.fromRGB(50,150,50) or Color3.fromRGB(50,50,50)
+	toggleBtn.BackgroundColor3 = state and Color3.fromRGB(52,150,80) or Color3.fromRGB(54,54,60)
 end
 
 toggleBtn.MouseButton1Click:Connect(function()
@@ -417,6 +539,11 @@ end)
 hideBtn.MouseButton1Click:Connect(function()
 	local vis = body.Visible
 	body.Visible = not vis
+	modeSection.Visible = not vis
+	typeSection.Visible = not vis
+	rangeSection.Visible = not vis
+	delaySection.Visible = not vis
+	legitSection.Visible = not vis
 	hideBtn.Text = vis and "Show" or "Hide"
 end)
 
@@ -433,19 +560,19 @@ optNormal.MouseButton1Click:Connect(function()
 	attackType = "Normal"
 	typeBtn.Text = "Normal"
 	typeDrop.Visible = false
-	legitRow.Visible = true
+	legitSection.Visible = true
 end)
 optCounter.MouseButton1Click:Connect(function()
 	attackType = "Counter"
 	typeBtn.Text = "Counter"
 	typeDrop.Visible = false
-	legitRow.Visible = true
+	legitSection.Visible = true
 end)
 optLegit.MouseButton1Click:Connect(function()
 	attackType = "Legit"
 	typeBtn.Text = "Legit"
 	typeDrop.Visible = false
-	legitRow.Visible = true
+	legitSection.Visible = true
 end)
 
 optBehind.MouseButton1Click:Connect(function()
@@ -462,7 +589,7 @@ end)
 legitBtn.MouseButton1Click:Connect(function()
 	matchFacing = not matchFacing
 	legitBtn.Text = matchFacing and "ON" or "OFF"
-	legitBtn.BackgroundColor3 = matchFacing and Color3.fromRGB(50,150,50) or Color3.fromRGB(40,40,40)
+	legitBtn.BackgroundColor3 = matchFacing and Color3.fromRGB(52,150,80) or Color3.fromRGB(42,42,48)
 end)
 
 rangeBox.FocusLost:Connect(function()
@@ -567,9 +694,7 @@ RunService.RenderStepped:Connect(function()
 	if not char then return end
 	local hrp = char:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
-
 	if (tick() - lastFire) < delaySec then return end
-
 	for _,name in ipairs(killerNames) do
 		local killer = killersFolder:FindFirstChild(name)
 		if killer then
@@ -595,11 +720,9 @@ RunService.RenderStepped:Connect(function()
 					end
 					return
 				end
-
 				if attackType == "Counter" and not killerPlayingCounterAnim(killer) then
 					continue
 				end
-
 				if isBehindTarget(hrp, kHRP) and killer ~= lastTarget then
 					lastTarget = killer
 					local start = tick()
