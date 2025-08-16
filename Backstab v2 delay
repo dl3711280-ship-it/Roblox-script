@@ -1,357 +1,328 @@
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local Stats = game:GetService("Stats")
-local lp = Players.LocalPlayer
+local Players=game:GetService("Players")
+local ReplicatedStorage=game:GetService("ReplicatedStorage")
+local RunService=game:GetService("RunService")
+local UserInputService=game:GetService("UserInputService")
+local Stats=game:GetService("Stats")
+local lp=Players.LocalPlayer
 
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "BackstabUI_Short"
-screenGui.ResetOnSpawn = false
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-screenGui.Parent = lp:WaitForChild("PlayerGui")
+local screenGui=Instance.new("ScreenGui")
+screenGui.Name="BackstabUI_Compact"
+screenGui.ResetOnSpawn=false
+screenGui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+screenGui.Parent=lp:WaitForChild("PlayerGui")
 
-local root = Instance.new("Frame")
-root.Name = "Root"
-root.AnchorPoint = Vector2.new(0,0)
-root.Size = UDim2.new(0,300,0,320)
-root.Position = UDim2.new(0,20,0,20)
-root.BackgroundColor3 = Color3.fromRGB(20,20,22)
-root.BorderSizePixel = 0
-root.Parent = screenGui
+local root=Instance.new("Frame")
+root.Size=UDim2.new(0,260,0,250)
+root.Position=UDim2.new(0,20,0,20)
+root.BackgroundColor3=Color3.fromRGB(24,24,24)
+root.BorderSizePixel=0
+root.Parent=screenGui
+local rootCorner=Instance.new("UICorner")
+rootCorner.CornerRadius=UDim.new(0,12)
+rootCorner.Parent=root
+local rootStroke=Instance.new("UIStroke")
+rootStroke.Thickness=1
+rootStroke.Color=Color3.fromRGB(60,60,60)
+rootStroke.Parent=root
 
-local rootCorner = Instance.new("UICorner")
-rootCorner.CornerRadius = UDim.new(0,14)
-rootCorner.Parent = root
+local header=Instance.new("Frame")
+header.Name="Header"
+header.Size=UDim2.new(1,0,0,36)
+header.BackgroundColor3=Color3.fromRGB(18,18,18)
+header.BorderSizePixel=0
+header.Parent=root
+local headerCorner=Instance.new("UICorner")
+headerCorner.CornerRadius=UDim.new(0,12)
+headerCorner.Parent=header
 
-local rootStroke = Instance.new("UIStroke")
-rootStroke.Thickness = 1
-rootStroke.Color = Color3.fromRGB(58,58,62)
-rootStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-rootStroke.Parent = root
+local title=Instance.new("TextLabel")
+title.BackgroundTransparency=1
+title.Position=UDim2.new(0,12,0,0)
+title.Size=UDim2.new(1,-130,1,0)
+title.Font=Enum.Font.SourceSansBold
+title.Text="Backstab"
+title.TextSize=20
+title.TextXAlignment=Enum.TextXAlignment.Left
+title.TextColor3=Color3.fromRGB(240,240,240)
+title.Parent=header
 
-local header = Instance.new("Frame")
-header.Name = "Header"
-header.Size = UDim2.new(1,0,0,44)
-header.BackgroundColor3 = Color3.fromRGB(18,18,20)
-header.BorderSizePixel = 0
-header.Parent = root
+local topBtns=Instance.new("Frame")
+topBtns.BackgroundTransparency=1
+topBtns.AnchorPoint=Vector2.new(1,0)
+topBtns.Position=UDim2.new(1,-8,0,4)
+topBtns.Size=UDim2.new(0,120,0,28)
+topBtns.Parent=header
+local topList=Instance.new("UIListLayout")
+topList.FillDirection=Enum.FillDirection.Horizontal
+topList.HorizontalAlignment=Enum.HorizontalAlignment.Right
+topList.VerticalAlignment=Enum.VerticalAlignment.Center
+topList.Padding=UDim.new(0,6)
+topList.Parent=topBtns
 
-local headerCorner = Instance.new("UICorner")
-headerCorner.CornerRadius = UDim.new(0,14)
-headerCorner.Parent = header
-
-local headerPad = Instance.new("UIPadding")
-headerPad.PaddingLeft = UDim.new(0,12)
-headerPad.PaddingRight = UDim.new(0,10)
-headerPad.Parent = header
-
-local title = Instance.new("TextLabel")
-title.BackgroundTransparency = 1
-title.Position = UDim2.new(0,0,0,0)
-title.Size = UDim2.new(1,-120,1,0)
-title.Font = Enum.Font.SourceSansBold
-title.Text = "Backstab"
-title.TextSize = 20
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.TextColor3 = Color3.fromRGB(238,238,242)
-title.Parent = header
-
-local topBtns = Instance.new("Frame")
-topBtns.BackgroundTransparency = 1
-topBtns.AnchorPoint = Vector2.new(1,0)
-topBtns.Position = UDim2.new(1,0,0,0)
-topBtns.Size = UDim2.new(0,110,1,0)
-topBtns.Parent = header
-
-local topBtnsList = Instance.new("UIListLayout")
-topBtnsList.FillDirection = Enum.FillDirection.Horizontal
-topBtnsList.HorizontalAlignment = Enum.HorizontalAlignment.Right
-topBtnsList.VerticalAlignment = Enum.VerticalAlignment.Center
-topBtnsList.Padding = UDim.new(0,8)
-topBtnsList.Parent = topBtns
-
-local function mkTopBtn(txt)
-	local b = Instance.new("TextButton")
-	b.Size = UDim2.new(0,48,0,28)
-	b.Text = txt
-	b.TextSize = 16
-	b.Font = Enum.Font.SourceSansSemibold
-	b.BackgroundColor3 = Color3.fromRGB(40,40,44)
-	b.TextColor3 = Color3.fromRGB(255,255,255)
-	b.AutoButtonColor = true
-	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0,8); c.Parent = b
-	local s = Instance.new("UIStroke"); s.Thickness = 1; s.Color = Color3.fromRGB(64,64,68); s.Parent = b
-	b.Parent = topBtns
+local function mkBtn(w,txt)
+	local b=Instance.new("TextButton")
+	b.Size=UDim2.new(0,w,1,0)
+	b.Text=txt
+	b.Font=Enum.Font.SourceSansSemibold
+	b.TextSize=16
+	b.BackgroundColor3=Color3.fromRGB(36,36,36)
+	b.TextColor3=Color3.fromRGB(255,255,255)
+	local c=Instance.new("UICorner");c.CornerRadius=UDim.new(0,8);c.Parent=b
+	local s=Instance.new("UIStroke");s.Thickness=1;s.Color=Color3.fromRGB(64,64,64);s.Parent=b
+	b.Parent=topBtns
 	return b
 end
 
-local hideBtn = mkTopBtn("Hide")
+local hideBtn=mkBtn(52,"Hide")
 
-local body = Instance.new("Frame")
-body.Name = "Body"
-body.BackgroundTransparency = 1
-body.Position = UDim2.new(0,0,0,44)
-body.Size = UDim2.new(1,0,1,-100)
-body.Parent = root
-
-local bodyPad = Instance.new("UIPadding")
-bodyPad.PaddingTop = UDim.new(0,12)
-bodyPad.PaddingLeft = UDim.new(0,12)
-bodyPad.PaddingRight = UDim.new(0,12)
-bodyPad.Parent = body
-
-local list = Instance.new("UIListLayout")
-list.FillDirection = Enum.FillDirection.Vertical
-list.HorizontalAlignment = Enum.HorizontalAlignment.Center
-list.VerticalAlignment = Enum.VerticalAlignment.Top
-list.SortOrder = Enum.SortOrder.LayoutOrder
-list.Padding = UDim.new(0,10)
-list.Parent = body
+local body=Instance.new("Frame")
+body.Name="Body"
+body.BackgroundTransparency=1
+body.Position=UDim2.new(0,0,0,36)
+body.Size=UDim2.new(1,0,1,-72)
+body.Parent=root
+local pad=Instance.new("UIPadding")
+pad.PaddingTop=UDim.new(0,10)
+pad.PaddingLeft=UDim.new(0,10)
+pad.PaddingRight=UDim.new(0,10)
+pad.Parent=body
+local list=Instance.new("UIListLayout")
+list.FillDirection=Enum.FillDirection.Vertical
+list.HorizontalAlignment=Enum.HorizontalAlignment.Center
+list.VerticalAlignment=Enum.VerticalAlignment.Top
+list.SortOrder=Enum.SortOrder.LayoutOrder
+list.Padding=UDim.new(0,8)
+list.Parent=body
 
 local function mkRow(h)
-	local f = Instance.new("Frame")
-	f.Size = UDim2.new(1,0,0,h or 44)
-	f.BackgroundColor3 = Color3.fromRGB(30,30,34)
-	f.BorderSizePixel = 0
-	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0,10); c.Parent = f
-	local s = Instance.new("UIStroke"); s.Thickness = 1; s.Color = Color3.fromRGB(62,62,68); s.Parent = f
-	local pad = Instance.new("UIPadding"); pad.PaddingLeft = UDim.new(0,10); pad.PaddingRight = UDim.new(0,10); pad.Parent = f
-	f.Parent = body
+	local f=Instance.new("Frame")
+	f.Size=UDim2.new(1,0,0,h or 40)
+	f.BackgroundColor3=Color3.fromRGB(28,28,28)
+	f.BorderSizePixel=0
+	local c=Instance.new("UICorner");c.CornerRadius=UDim.new(0,8);c.Parent=f
+	local s=Instance.new("UIStroke");s.Thickness=1;s.Color=Color3.fromRGB(55,55,55);s.Parent=f
+	f.Parent=body
 	return f
 end
+local function mkHL(row)
+	local l=Instance.new("UIListLayout")
+	l.FillDirection=Enum.FillDirection.Horizontal
+	l.Padding=UDim.new(0,8)
+	l.VerticalAlignment=Enum.VerticalAlignment.Center
+	l.HorizontalAlignment=Enum.HorizontalAlignment.Left
+	l.Parent=row
+end
+local function mkLabel(p,txt,scale)
+	local t=Instance.new("TextLabel")
+	t.BackgroundTransparency=1
+	t.Size=UDim2.new(scale or 0.5,0,1,0)
+	t.Font=Enum.Font.SourceSansSemibold
+	t.Text=txt
+	t.TextXAlignment=Enum.TextXAlignment.Left
+	t.TextSize=18
+	t.TextColor3=Color3.fromRGB(230,230,230)
+	t.Parent=p
+	return t
+end
+local function mkInput(p,defaultW,txt)
+	local b=Instance.new("TextBox")
+	b.Size=UDim2.new(0,defaultW,0,28)
+	b.Font=Enum.Font.SourceSans
+	b.TextSize=16
+	b.Text=txt
+	b.PlaceholderText=txt
+	b.BackgroundColor3=Color3.fromRGB(40,40,40)
+	b.TextColor3=Color3.fromRGB(255,255,255)
+	b.ClearTextOnFocus=false
+	b.Parent=p
+	local c=Instance.new("UICorner");c.CornerRadius=UDim.new(0,8);c.Parent=b
+	local s=Instance.new("UIStroke");s.Thickness=1;s.Color=Color3.fromRGB(66,66,66);s.Parent=b
+	return b
+end
+local function mkToggle(p,w,txt)
+	local b=Instance.new("TextButton")
+	b.Size=UDim2.new(0,w,0,30)
+	b.Text=txt
+	b.Font=Enum.Font.SourceSansBold
+	b.TextSize=18
+	b.BackgroundColor3=Color3.fromRGB(50,50,50)
+	b.TextColor3=Color3.fromRGB(255,255,255)
+	b.Parent=p
+	local c=Instance.new("UICorner");c.CornerRadius=UDim.new(0,8);c.Parent=b
+	local s=Instance.new("UIStroke");s.Thickness=1;s.Color=Color3.fromRGB(76,76,76);s.Parent=b
+	return b
+end
 
-local row1 = mkRow(48)
-local r1list = Instance.new("UIListLayout")
-r1list.FillDirection = Enum.FillDirection.Horizontal
-r1list.Padding = UDim.new(0,10)
-r1list.VerticalAlignment = Enum.VerticalAlignment.Center
-r1list.HorizontalAlignment = Enum.HorizontalAlignment.Left
-r1list.Parent = row1
+local r1=mkRow(40);mkHL(r1);local lblMaster=mkLabel(r1,"Backstab",0.55);local toggleBtn=mkToggle(r1,90,"OFF")
 
-local toggleLabel = Instance.new("TextLabel")
-toggleLabel.BackgroundTransparency = 1
-toggleLabel.Size = UDim2.new(0.55,0,1,0)
-toggleLabel.Font = Enum.Font.SourceSansSemibold
-toggleLabel.Text = "Backstab"
-toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
-toggleLabel.TextSize = 18
-toggleLabel.TextColor3 = Color3.fromRGB(230,230,230)
-toggleLabel.Parent = row1
+local r2=mkRow(36);mkHL(r2);local lblRange=mkLabel(r2,"Range",0.55);local rangeBox=mkInput(r2,90,"4")
+local r3=mkRow(36);mkHL(r3);local lblDelay=mkLabel(r3,"Delay (s)",0.55);local delayBox=mkInput(r3,90,"0.20")
 
-local toggleBtn = Instance.new("TextButton")
-toggleBtn.Size = UDim2.new(0.35,0,0,30)
-toggleBtn.Text = "OFF"
-toggleBtn.Font = Enum.Font.SourceSansBold
-toggleBtn.TextSize = 18
-toggleBtn.BackgroundColor3 = Color3.fromRGB(54,54,60)
-toggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
-toggleBtn.Parent = row1
-local toggleBtnCorner = Instance.new("UICorner"); toggleBtnCorner.CornerRadius = UDim.new(0,8); toggleBtnCorner.Parent = toggleBtn
-local toggleBtnStroke = Instance.new("UIStroke"); toggleBtnStroke.Thickness = 1; toggleBtnStroke.Color = Color3.fromRGB(76,76,84); toggleBtnStroke.Parent = toggleBtn
+local r4=mkRow(36);mkHL(r4);local lblType=mkLabel(r4,"Type",0.45);local typeBtn=mkToggle(r4,130,"Normal")
+local r5=mkRow(36);mkHL(r5);local lblMode=mkLabel(r5,"Mode",0.45);local modeBtn=mkToggle(r5,130,"Behind")
 
-local row2 = mkRow(48)
-local r2list = Instance.new("UIListLayout"); r2list.FillDirection = Enum.FillDirection.Horizontal; r2list.Padding = UDim.new(0,10); r2list.VerticalAlignment = Enum.VerticalAlignment.Center; r2list.HorizontalAlignment = Enum.HorizontalAlignment.Left; r2list.Parent = row2
-local rangeLabel = Instance.new("TextLabel"); rangeLabel.BackgroundTransparency = 1; rangeLabel.Size = UDim2.new(0.55,0,1,0); rangeLabel.Font = Enum.Font.SourceSans; rangeLabel.Text = "Range"; rangeLabel.TextXAlignment = Enum.TextXAlignment.Left; rangeLabel.TextSize = 16; rangeLabel.TextColor3 = Color3.fromRGB(220,220,220); rangeLabel.Parent = row2
-local rangeBox = Instance.new("TextBox"); rangeBox.Size = UDim2.new(0.35,0,0,28); rangeBox.Font = Enum.Font.SourceSans; rangeBox.TextSize = 16; rangeBox.PlaceholderText = "4"; rangeBox.Text = "4"; rangeBox.BackgroundColor3 = Color3.fromRGB(42,42,48); rangeBox.TextColor3 = Color3.fromRGB(255,255,255); rangeBox.ClearTextOnFocus = false; rangeBox.Parent = row2
-local rangeCorner = Instance.new("UICorner"); rangeCorner.CornerRadius = UDim.new(0,8); rangeCorner.Parent = rangeBox
-local rangeStroke = Instance.new("UIStroke"); rangeStroke.Thickness = 1; rangeStroke.Color = Color3.fromRGB(70,70,78); rangeStroke.Parent = rangeBox
+local r6=mkRow(36);mkHL(r6);local lblLegit=mkLabel(r6,"Legit Aimbot",0.55);local legitBtn=mkToggle(r6,90,"OFF")
 
-local row3 = mkRow(48)
-local r3list = Instance.new("UIListLayout"); r3list.FillDirection = Enum.FillDirection.Horizontal; r3list.Padding = UDim.new(0,10); r3list.VerticalAlignment = Enum.VerticalAlignment.Center; r3list.HorizontalAlignment = Enum.HorizontalAlignment.Left; r3list.Parent = row3
-local delayLabel = Instance.new("TextLabel"); delayLabel.BackgroundTransparency = 1; delayLabel.Size = UDim2.new(0.55,0,1,0); delayLabel.Font = Enum.Font.SourceSans; delayLabel.Text = "Delay (s)"; delayLabel.TextXAlignment = Enum.TextXAlignment.Left; delayLabel.TextSize = 16; delayLabel.TextColor3 = Color3.fromRGB(220,220,220); delayLabel.Parent = row3
-local delayBox = Instance.new("TextBox"); delayBox.Size = UDim2.new(0.35,0,0,28); delayBox.Font = Enum.Font.SourceSans; delayBox.TextSize = 16; delayBox.PlaceholderText = "0.20"; delayBox.Text = "0.20"; delayBox.BackgroundColor3 = Color3.fromRGB(42,42,48); delayBox.TextColor3 = Color3.fromRGB(255,255,255); delayBox.ClearTextOnFocus = false; delayBox.Parent = row3
-local delayCorner = Instance.new("UICorner"); delayCorner.CornerRadius = UDim.new(0,8); delayCorner.Parent = delayBox
-local delayStroke = Instance.new("UIStroke"); delayStroke.Thickness = 1; delayStroke.Color = Color3.fromRGB(70,70,78); delayStroke.Parent = delayBox
+local footer=Instance.new("Frame")
+footer.BackgroundColor3=Color3.fromRGB(18,18,18)
+footer.BorderSizePixel=0
+footer.Size=UDim2.new(1,0,0,36)
+footer.Position=UDim2.new(0,0,1,-36)
+footer.Parent=root
+local statusText=Instance.new("TextLabel")
+statusText.BackgroundTransparency=1
+statusText.Size=UDim2.new(1,-16,1,0)
+statusText.Position=UDim2.new(0,8,0,0)
+statusText.Font=Enum.Font.SourceSansItalic
+statusText.Text="Ready"
+statusText.TextXAlignment=Enum.TextXAlignment.Left
+statusText.TextSize=14
+statusText.TextColor3=Color3.fromRGB(180,180,180)
+statusText.Parent=footer
 
-local row4 = mkRow(48)
-local r4list = Instance.new("UIListLayout"); r4list.FillDirection = Enum.FillDirection.Horizontal; r4list.Padding = UDim.new(0,10); r4list.VerticalAlignment = Enum.VerticalAlignment.Center; r4list.HorizontalAlignment = Enum.HorizontalAlignment.Left; r4list.Parent = row4
-local typeLabel = Instance.new("TextLabel"); typeLabel.BackgroundTransparency = 1; typeLabel.Size = UDim2.new(0.55,0,1,0); typeLabel.Font = Enum.Font.SourceSans; typeLabel.Text = "Backstab Type"; typeLabel.TextXAlignment = Enum.TextXAlignment.Left; typeLabel.TextSize = 16; typeLabel.TextColor3 = Color3.fromRGB(220,220,220); typeLabel.Parent = row4
-local typeBtn = Instance.new("TextButton"); typeBtn.Size = UDim2.new(0.35,0,0,28); typeBtn.Text = "Normal"; typeBtn.Font = Enum.Font.SourceSans; typeBtn.TextSize = 16; typeBtn.BackgroundColor3 = Color3.fromRGB(42,42,48); typeBtn.TextColor3 = Color3.fromRGB(255,255,255); typeBtn.Parent = row4
-local typeCorner = Instance.new("UICorner"); typeCorner.CornerRadius = UDim.new(0,8); typeCorner.Parent = typeBtn
-local typeStroke = Instance.new("UIStroke"); typeStroke.Thickness = 1; typeStroke.Color = Color3.fromRGB(70,70,78); typeStroke.Parent = typeBtn
+local showBtnGui=Instance.new("ScreenGui")
+showBtnGui.Name="BackstabUI_Show"
+showBtnGui.ResetOnSpawn=false
+showBtnGui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+showBtnGui.Parent=lp.PlayerGui
+local showBtn=Instance.new("TextButton")
+showBtn.Size=UDim2.new(0,70,0,26)
+showBtn.Position=UDim2.new(0,20,0,20)
+showBtn.Text="Show"
+showBtn.Font=Enum.Font.SourceSansSemibold
+showBtn.TextSize=16
+showBtn.BackgroundColor3=Color3.fromRGB(36,36,36)
+showBtn.TextColor3=Color3.fromRGB(255,255,255)
+showBtn.Visible=false
+showBtn.Parent=showBtnGui
+local sbc=Instance.new("UICorner");sbc.CornerRadius=UDim.new(0,8);sbc.Parent=showBtn
+local sbs=Instance.new("UIStroke");sbs.Thickness=1;sbs.Color=Color3.fromRGB(64,64,64);sbs.Parent=showBtn
 
-local row5 = mkRow(48)
-local r5list = Instance.new("UIListLayout"); r5list.FillDirection = Enum.FillDirection.Horizontal; r5list.Padding = UDim.new(0,10); r5list.VerticalAlignment = Enum.VerticalAlignment.Center; r5list.HorizontalAlignment = Enum.HorizontalAlignment.Left; r5list.Parent = row5
-local modeLabel = Instance.new("TextLabel"); modeLabel.BackgroundTransparency = 1; modeLabel.Size = UDim2.new(0.55,0,1,0); modeLabel.Font = Enum.Font.SourceSans; modeLabel.Text = "Mode"; modeLabel.TextXAlignment = Enum.TextXAlignment.Left; modeLabel.TextSize = 16; modeLabel.TextColor3 = Color3.fromRGB(220,220,220); modeLabel.Parent = row5
-local modeBtn = Instance.new("TextButton"); modeBtn.Size = UDim2.new(0.35,0,0,28); modeBtn.Text = "Behind"; modeBtn.Font = Enum.Font.SourceSans; modeBtn.TextSize = 16; modeBtn.BackgroundColor3 = Color3.fromRGB(42,42,48); modeBtn.TextColor3 = Color3.fromRGB(255,255,255); modeBtn.Parent = row5
-local modeCorner = Instance.new("UICorner"); modeCorner.CornerRadius = UDim.new(0,8); modeCorner.Parent = modeBtn
-local modeStroke = Instance.new("UIStroke"); modeStroke.Thickness = 1; modeStroke.Color = Color3.fromRGB(70,70,78); modeStroke.Parent = modeBtn
-
-local row6 = mkRow(48)
-local r6list = Instance.new("UIListLayout"); r6list.FillDirection = Enum.FillDirection.Horizontal; r6list.Padding = UDim.new(0,10); r6list.VerticalAlignment = Enum.VerticalAlignment.Center; r6list.HorizontalAlignment = Enum.HorizontalAlignment.Left; r6list.Parent = row6
-local legitLabel = Instance.new("TextLabel"); legitLabel.BackgroundTransparency = 1; legitLabel.Size = UDim2.new(0.55,0,1,0); legitLabel.Font = Enum.Font.SourceSans; legitLabel.Text = "Legit Aimbot"; legitLabel.TextXAlignment = Enum.TextXAlignment.Left; legitLabel.TextSize = 16; legitLabel.TextColor3 = Color3.fromRGB(220,220,220); legitLabel.Parent = row6
-local legitBtn = Instance.new("TextButton"); legitBtn.Size = UDim2.new(0.35,0,0,28); legitBtn.Text = "OFF"; legitBtn.Font = Enum.Font.SourceSans; legitBtn.TextSize = 16; legitBtn.BackgroundColor3 = Color3.fromRGB(42,42,48); legitBtn.TextColor3 = Color3.fromRGB(255,255,255); legitBtn.Parent = row6
-local legitCorner = Instance.new("UICorner"); legitCorner.CornerRadius = UDim.new(0,8); legitCorner.Parent = legitBtn
-local legitStroke = Instance.new("UIStroke"); legitStroke.Thickness = 1; legitStroke.Color = Color3.fromRGB(70,70,78); legitStroke.Parent = legitBtn
-
-local footer = Instance.new("Frame")
-footer.BackgroundColor3 = Color3.fromRGB(18,18,20)
-footer.BorderSizePixel = 0
-footer.Size = UDim2.new(1,0,0,56)
-footer.Position = UDim2.new(0,0,1,-56)
-footer.Parent = root
-
-local statusRow = Instance.new("Frame")
-statusRow.BackgroundTransparency = 1
-statusRow.Size = UDim2.new(1,-16,1,0)
-statusRow.Position = UDim2.new(0,8,0,0)
-statusRow.Parent = footer
-
-local statusText = Instance.new("TextLabel")
-statusText.BackgroundTransparency = 1
-statusText.Size = UDim2.new(1,0,1,0)
-statusText.Font = Enum.Font.SourceSansItalic
-statusText.Text = "Ready"
-statusText.TextXAlignment = Enum.TextXAlignment.Left
-statusText.TextSize = 14
-statusText.TextColor3 = Color3.fromRGB(186,186,192)
-statusText.Parent = statusRow
-
-local miniGui = Instance.new("ScreenGui")
-miniGui.Name = "BackstabUI_Mini"
-miniGui.ResetOnSpawn = false
-miniGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-miniGui.Parent = lp:WaitForChild("PlayerGui")
-miniGui.Enabled = true
-
-local showBtn = Instance.new("TextButton")
-showBtn.Name = "ShowBtn"
-showBtn.Size = UDim2.new(0,80,0,30)
-showBtn.Position = UDim2.new(0,20,0,20)
-showBtn.Text = "Show"
-showBtn.Font = Enum.Font.SourceSansSemibold
-showBtn.TextSize = 16
-showBtn.BackgroundColor3 = Color3.fromRGB(36,36,40)
-showBtn.TextColor3 = Color3.fromRGB(255,255,255)
-showBtn.Visible = false
-showBtn.Parent = miniGui
-local showCorner = Instance.new("UICorner"); showCorner.CornerRadius = UDim.new(0,8); showCorner.Parent = showBtn
-local showStroke = Instance.new("UIStroke"); showStroke.Thickness = 1; showStroke.Color = Color3.fromRGB(64,64,68); showStroke.Parent = showBtn
-
-local dragging = false
+local dragging=false
 local dragStart
 local startPos
 header.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		dragStart = input.Position
-		startPos = root.Position
+	if input.UserInputType==Enum.UserInputType.MouseButton1 then
+		dragging=true
+		dragStart=input.Position
+		startPos=root.Position
 		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
+			if input.UserInputState==Enum.UserInputState.End then
+				dragging=false
 			end
 		end)
 	end
 end)
 UserInputService.InputChanged:Connect(function(input)
-	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-		local delta = input.Position - dragStart
-		root.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	if dragging and input.UserInputType==Enum.UserInputType.MouseMovement then
+		local d=input.Position-dragStart
+		root.Position=UDim2.new(startPos.X.Scale,startPos.X.Offset+d.X,startPos.Y.Scale,startPos.Y.Offset+d.Y)
 	end
 end)
 
+local uiHidden=false
+local function setUIHidden(v)
+	uiHidden=v
+	root.Visible=not v
+	showBtn.Visible=v
+end
 hideBtn.MouseButton1Click:Connect(function()
-	root.Visible = false
-	showBtn.Visible = true
+	setUIHidden(true)
 end)
 showBtn.MouseButton1Click:Connect(function()
-	root.Visible = true
-	showBtn.Visible = false
+	setUIHidden(false)
 end)
 
-local enabled = false
-local lastTarget = nil
-local range = 4
-local delaySec = 0.20
-local matchFacing = false
-local attackType = "Normal"
-local mode = "Behind"
-local daggerCooldownText = nil
-local killersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
-local killerNames = {"Jason","c00lkidd","JohnDoe","1x1x1x1","Noli"}
-local daggerRemote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
+local enabled=false
+local lastTarget=nil
+local range=4
+local delaySec=0.20
+local matchFacing=false
+local attackType="Normal"
+local mode="Behind"
+local daggerCooldownText=nil
+local killersFolder=workspace:WaitForChild("Players"):WaitForChild("Killers")
+local killerNames={"Jason","c00lkidd","JohnDoe","1x1x1x1","Noli"}
+local daggerRemote=ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
 
 local function setToggle(state)
-	enabled = state
-	toggleBtn.Text = state and "ON" or "OFF"
-	toggleBtn.BackgroundColor3 = state and Color3.fromRGB(52,150,80) or Color3.fromRGB(54,54,60)
+	enabled=state
+	toggleBtn.Text=state and "ON" or "OFF"
+	toggleBtn.BackgroundColor3=state and Color3.fromRGB(50,150,50) or Color3.fromRGB(50,50,50)
 end
-toggleBtn.MouseButton1Click:Connect(function() setToggle(not enabled) end)
+toggleBtn.MouseButton1Click:Connect(function()
+	setToggle(not enabled)
+end)
+
+local types={"Normal","Counter","Legit"}
+local typeIndex=1
+local function cycleType()
+	typeIndex=typeIndex%#types+1
+	attackType=types[typeIndex]
+	typeBtn.Text=attackType
+end
+typeBtn.MouseButton1Click:Connect(cycleType)
+
+local modes={"Behind","Around"}
+local modeIndex=1
+local function cycleMode()
+	modeIndex=modeIndex%#modes+1
+	mode=modes[modeIndex]
+	modeBtn.Text=mode
+end
+modeBtn.MouseButton1Click:Connect(cycleMode)
 
 legitBtn.MouseButton1Click:Connect(function()
-	matchFacing = not matchFacing
-	legitBtn.Text = matchFacing and "ON" or "OFF"
-	legitBtn.BackgroundColor3 = matchFacing and Color3.fromRGB(52,150,80) or Color3.fromRGB(42,42,48)
+	matchFacing=not matchFacing
+	legitBtn.Text=matchFacing and "ON" or "OFF"
+	legitBtn.BackgroundColor3=matchFacing and Color3.fromRGB(50,150,50) or Color3.fromRGB(50,50,50)
 end)
 
 rangeBox.FocusLost:Connect(function()
-	local v = tonumber(rangeBox.Text)
-	if v and v >= 1 then
-		range = v
-		rangeBox.Text = tostring(v)
+	local v=tonumber(rangeBox.Text)
+	if v and v>=1 then
+		range=v
+		rangeBox.Text=tostring(v)
 	else
-		rangeBox.Text = tostring(range)
-		statusText.Text = "Invalid range"
+		rangeBox.Text=tostring(range)
+		statusText.Text="Invalid range"
 	end
 end)
 
 delayBox.FocusLost:Connect(function()
-	local v = tonumber(delayBox.Text)
-	if v and v >= 0 then
-		delaySec = v
-		delayBox.Text = string.format("%.2f", v)
+	local v=tonumber(delayBox.Text)
+	if v and v>=0 then
+		delaySec=v
+		delayBox.Text=string.format("%.2f",v)
 	else
-		delayBox.Text = string.format("%.2f", delaySec)
-		statusText.Text = "Invalid delay"
+		delayBox.Text=string.format("%.2f",delaySec)
+		statusText.Text="Invalid delay"
 	end
-end)
-
-local attackTypes = {"Normal","Counter","Legit"}
-local typeIdx = 1
-local modes = {"Behind","Around"}
-local modeIdx = 1
-
-typeBtn.MouseButton1Click:Connect(function()
-	typeIdx = typeIdx % #attackTypes + 1
-	attackType = attackTypes[typeIdx]
-	typeBtn.Text = attackType
-end)
-
-modeBtn.MouseButton1Click:Connect(function()
-	modeIdx = modeIdx % #modes + 1
-	mode = modes[modeIdx]
-	modeBtn.Text = mode
 end)
 
 local function refreshDaggerRef()
-	local gui = lp:FindFirstChild("PlayerGui")
-	if not gui then
-		daggerCooldownText = nil
-		return
-	end
-	local mainui = gui:FindFirstChild("MainUI")
+	local gui=lp:FindFirstChild("PlayerGui")
+	if not gui then daggerCooldownText=nil return end
+	local mainui=gui:FindFirstChild("MainUI")
 	if mainui then
-		local ac = mainui:FindFirstChild("AbilityContainer")
+		local ac=mainui:FindFirstChild("AbilityContainer")
 		if ac then
-			local d = ac:FindFirstChild("Dagger")
+			local d=ac:FindFirstChild("Dagger")
 			if d then
-				daggerCooldownText = d:FindFirstChild("CooldownTime")
+				daggerCooldownText=d:FindFirstChild("CooldownTime")
 				return
 			end
 		end
 	end
-	daggerCooldownText = nil
+	daggerCooldownText=nil
 end
 lp.PlayerGui.DescendantAdded:Connect(refreshDaggerRef)
 lp.PlayerGui.DescendantRemoving:Connect(function(obj)
-	if obj == daggerCooldownText then
-		daggerCooldownText = nil
-	end
+	if obj==daggerCooldownText then daggerCooldownText=nil end
 end)
 refreshDaggerRef()
 
-local counterAnimIDs = {
+local counterAnimIDs={
 	"126830014841198","126355327951215","121086746534252","18885909645",
 	"98456918873918","105458270463374","83829782357897","125403313786645",
 	"118298475669935","82113744478546","70371667919898","99135633258223",
@@ -359,116 +330,122 @@ local counterAnimIDs = {
 	"109667959938617","126681776859538","129976080405072","121293883585738",
 	"81639435858902","137314737492715","92173139187970"
 }
-local counterSet = {}
-for _,id in ipairs(counterAnimIDs) do counterSet[id] = true end
+local counterSet={}
+for _,id in ipairs(counterAnimIDs) do counterSet[id]=true end
 
 local function killerPlayingCounterAnim(model)
-	local hum = model:FindFirstChildOfClass("Humanoid")
-	if not hum then return false end
-	local animator = hum:FindFirstChildOfClass("Animator")
-	if not animator then return false end
+	local hum=model:FindFirstChildOfClass("Humanoid"); if not hum then return false end
+	local animator=hum:FindFirstChildOfClass("Animator"); if not animator then return false end
 	for _,track in ipairs(animator:GetPlayingAnimationTracks()) do
 		if track.Animation and track.Animation.AnimationId then
-			local num = tostring(track.Animation.AnimationId:match("%d+") or "")
-			if counterSet[num] then
-				return true
-			end
+			local num=tostring(track.Animation.AnimationId:match("%d+") or "")
+			if counterSet[num] then return true end
 		end
 	end
 	return false
 end
 
-local function isBehindTarget(hrp, targetHRP)
-	local distance = (hrp.Position - targetHRP.Position).Magnitude
-	if distance > range then return false end
-	if mode == "Around" then
-		return true
-	else
-		local dir = -targetHRP.CFrame.LookVector
-		local toP = (hrp.Position - targetHRP.Position)
-		return toP:Dot(dir) > 0.5
+local function isBehindTarget(hrp,targetHRP)
+	local distance=(hrp.Position-targetHRP.Position).Magnitude
+	if distance>range then return false end
+	if mode=="Around" then return true else
+		local dir=-targetHRP.CFrame.LookVector
+		local toP=(hrp.Position-targetHRP.Position)
+		return toP:Dot(dir)>0.5
 	end
 end
 
-local lastFire = 0
+local function nearestKiller(hrp)
+	local best=nil
+	local bestDist=math.huge
+	for _,name in ipairs(killerNames) do
+		local m=killersFolder:FindFirstChild(name)
+		if m then
+			local h=m:FindFirstChild("HumanoidRootPart")
+			if h then
+				local d=(h.Position-hrp.Position).Magnitude
+				if d<bestDist then
+					bestDist=d
+					best=m
+				end
+			end
+		end
+	end
+	return best,bestDist
+end
+
+local lastFire=0
 
 RunService.RenderStepped:Connect(function()
 	if not enabled then return end
 	if not daggerCooldownText or not daggerCooldownText.Parent then return end
 	if tonumber(daggerCooldownText.Text) then return end
-	local char = lp.Character
-	if not char then return end
-	local hrp = char:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
-	if (tick() - lastFire) < delaySec then return end
+	local char=lp.Character; if not char then return end
+	local hrp=char:FindFirstChild("HumanoidRootPart"); if not hrp then return end
+	if (tick()-lastFire)<delaySec then return end
 
-	for _,name in ipairs(killerNames) do
-		local killer = killersFolder:FindFirstChild(name)
-		if killer then
-			local kHRP = killer:FindFirstChild("HumanoidRootPart")
-			if kHRP then
-				if attackType == "Legit" then
-					local dist = (kHRP.Position - hrp.Position).Magnitude
-					if dist <= range then
-						if matchFacing then
-							hrp.CFrame = CFrame.new(hrp.Position, hrp.Position + kHRP.CFrame.LookVector)
-						end
-						if mode == "Behind" then
-							local dirTo = (kHRP.Position - hrp.Position).Unit
-							local dot = hrp.CFrame.LookVector:Dot(dirTo)
-							if dot > 0.6 then
-								statusText.Text = "Blocked: target in front"
-								return
-							end
-						end
-						daggerRemote:FireServer("UseActorAbility","Dagger")
-						lastFire = tick()
-						statusText.Text = "Stab (Legit)"
-					end
+	if attackType=="Legit" then
+		local k,dist=nearestKiller(hrp)
+		if not k then return end
+		local kHRP=k:FindFirstChild("HumanoidRootPart"); if not kHRP then return end
+		if dist<=range then
+			if matchFacing then
+				hrp.CFrame=CFrame.new(hrp.Position,hrp.Position+kHRP.CFrame.LookVector)
+			end
+			if mode=="Behind" then
+				local dirTo=(kHRP.Position-hrp.Position).Unit
+				local dot=hrp.CFrame.LookVector:Dot(dirTo)
+				if dot>0.6 then
+					statusText.Text="Blocked: target in front"
 					return
 				end
+			end
+			ReplicatedStorage.Modules.Network.RemoteEvent:FireServer("UseActorAbility","Dagger")
+			lastFire=tick()
+			statusText.Text="Stab (Legit)"
+		end
+		return
+	end
 
-				if attackType == "Counter" and not killerPlayingCounterAnim(killer) then
+	for _,name in ipairs(killerNames) do
+		local killer=killersFolder:FindFirstChild(name)
+		if killer then
+			local kHRP=killer:FindFirstChild("HumanoidRootPart")
+			if kHRP then
+				if attackType=="Counter" and not killerPlayingCounterAnim(killer) then
 					continue
 				end
-
-				if isBehindTarget(hrp, kHRP) and killer ~= lastTarget then
-					lastTarget = killer
-					local start = tick()
-					local did = false
+				if isBehindTarget(hrp,kHRP) and killer~=lastTarget then
+					lastTarget=killer
+					local start=tick()
+					local did=false
 					local hb
-					hb = RunService.Heartbeat:Connect(function()
-						if not char or not char.Parent or not kHRP or not kHRP.Parent then
-							if hb then hb:Disconnect() end
-							return
-						end
-						if (tick() - start) >= 0.5 then
-							if hb then hb:Disconnect() end
-							return
-						end
-						local ping = tonumber(Stats.Network.ServerStatsItem["Data Ping"]:GetValueString():match("%d+")) or 50
-						local ps = ping/1000
-						local vel = kHRP.Velocity
-						local moveDir = vel.Magnitude > 0.1 and vel.Unit or Vector3.new()
-						local off = moveDir * (ps * vel.Magnitude)
-						local predicted = kHRP.Position + off
+					hb=RunService.Heartbeat:Connect(function()
+						if not char or not char.Parent or not kHRP or not kHRP.Parent then if hb then hb:Disconnect() end return end
+						if (tick()-start)>=0.5 then if hb then hb:Disconnect() end return end
+						local ping=tonumber(Stats.Network.ServerStatsItem["Data Ping"]:GetValueString():match("%d+")) or 50
+						local ps=ping/1000
+						local vel=kHRP.Velocity
+						local moveDir=vel.Magnitude>0.1 and vel.Unit or Vector3.new()
+						local off=moveDir*(ps*vel.Magnitude)
+						local predicted=kHRP.Position+off
 						local tpos
-						if mode == "Behind" then
-							tpos = predicted - (kHRP.CFrame.LookVector * 0.3)
+						if mode=="Behind" then
+							tpos=predicted-(kHRP.CFrame.LookVector*0.3)
 						else
-							local rightVec = kHRP.CFrame.RightVector
-							local rel = (hrp.Position - kHRP.Position)
-							local lateralSpeed = vel:Dot(rightVec)
-							local baseOffset = (rel.Magnitude > 0.1) and rel.Unit * 0.3 or Vector3.new()
-							local lateralOffset = rightVec * lateralSpeed * 0.3
-							tpos = predicted + baseOffset + lateralOffset
+							local rightVec=kHRP.CFrame.RightVector
+							local rel=(hrp.Position-kHRP.Position)
+							local lateralSpeed=vel:Dot(rightVec)
+							local baseOffset=(rel.Magnitude>0.1) and rel.Unit*0.3 or Vector3.new()
+							local lateralOffset=rightVec*lateralSpeed*0.3
+							tpos=predicted+baseOffset+lateralOffset
 						end
-						hrp.CFrame = CFrame.new(tpos, tpos + kHRP.CFrame.LookVector)
+						hrp.CFrame=CFrame.new(tpos,tpos+kHRP.CFrame.LookVector)
 						if not did then
-							did = true
-							daggerRemote:FireServer("UseActorAbility","Dagger")
-							lastFire = tick()
-							statusText.Text = "Stab ("..attackType..")"
+							did=true
+							ReplicatedStorage.Modules.Network.RemoteEvent:FireServer("UseActorAbility","Dagger")
+							lastFire=tick()
+							statusText.Text="Stab ("..attackType..")"
 						end
 					end)
 					task.delay(2,function()
@@ -476,7 +453,7 @@ RunService.RenderStepped:Connect(function()
 						while kHRP and hrp and isBehindTarget(hrp,kHRP) do
 							RunService.Heartbeat:Wait()
 						end
-						lastTarget = nil
+						lastTarget=nil
 					end)
 					break
 				end
