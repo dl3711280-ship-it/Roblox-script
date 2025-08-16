@@ -652,4 +652,3 @@ RunService.RenderStepped:Connect(function()
 		end
 	end
 end)
-```0
