@@ -36,6 +36,7 @@ header.Size = UDim2.new(1,0,0,44)
 header.BackgroundColor3 = Color3.fromRGB(18,18,20)
 header.BorderSizePixel = 0
 header.Parent = root
+
 local headerCorner = Instance.new("UICorner")
 headerCorner.CornerRadius = UDim.new(0,14)
 headerCorner.Parent = header
@@ -96,8 +97,8 @@ body.Parent = root
 
 local bodyPad = Instance.new("UIPadding")
 bodyPad.PaddingTop = UDim.new(0,12)
-bodyPad.PaddingLeft = UDim2.new(0,12)
-bodyPad.PaddingRight = UDim2.new(0,12)
+bodyPad.PaddingLeft = UDim.new(0,12)
+bodyPad.PaddingRight = UDim.new(0,12)
 bodyPad.Parent = body
 
 local list = Instance.new("UIListLayout")
@@ -260,7 +261,6 @@ showBtn.MouseButton1Click:Connect(function()
 end)
 
 local enabled = false
-local cooldown = false
 local lastTarget = nil
 local range = 4
 local delaySec = 0.20
