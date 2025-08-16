@@ -1,0 +1,130 @@
+local Players=game:GetService("Players")
+local ReplicatedStorage=game:GetService("ReplicatedStorage")
+local RunService=game:GetService("RunService")
+local lp=Players.LocalPlayer
+local screenGui=Instance.new("ScreenGui")
+screenGui.Name="BackstabToggleGui"
+screenGui.ResetOnSpawn=false
+screenGui.Parent=lp:WaitForChild("PlayerGui")
+local toggleButton=Instance.new("TextButton")
+toggleButton.Size=UDim2.new(0,150,0,40)
+toggleButton.Position=UDim2.new(0,10,0,10)
+toggleButton.BackgroundColor3=Color3.fromRGB(30,30,30)
+toggleButton.TextColor3=Color3.fromRGB(255,255,255)
+toggleButton.Font=Enum.Font.SourceSansBold
+toggleButton.TextSize=20
+toggleButton.Text="Backstab: OFF"
+toggleButton.Parent=screenGui
+local dropdown=Instance.new("Frame")
+dropdown.Size=UDim2.new(0,150,0,120)
+dropdown.Position=UDim2.new(0,10,0,60)
+dropdown.BackgroundColor3=Color3.fromRGB(40,40,40)
+dropdown.Visible=false
+dropdown.Parent=screenGui
+local modes={"Normal","Counter","Legit"}
+local mode="Normal"
+for i,modeName in ipairs(modes)do
+    local button=Instance.new("TextButton")
+    button.Size=UDim2.new(1,0,0,40)
+    button.Position=UDim2.new(0,0,0,(i-1)*40)
+    button.BackgroundColor3=Color3.fromRGB(60,60,60)
+    button.TextColor3=Color3.fromRGB(255,255,255)
+    button.Font=Enum.Font.SourceSans
+    button.TextSize=18
+    button.Text=modeName
+    button.Parent=dropdown
+    button.MouseButton1Click:Connect(function()
+        mode=modeName
+        dropdown.Visible=false
+    end)
+end
+local enabled=false
+toggleButton.MouseButton1Click:Connect(function()
+    enabled=not enabled
+    toggleButton.Text="Backstab: "..(enabled and "ON" or "OFF")
+    dropdown.Visible=enabled
+end)
+game:GetService("UserInputService").InputBegan:Connect(function(input,gpe)
+    if not gpe and input.KeyCode==Enum.KeyCode.RightShift then
+        screenGui.Enabled=not screenGui.Enabled
+    end
+end)
+local daggerRemote=ReplicatedStorage.Remotes:WaitForChild("Ability")
+local hrp=lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+lp.CharacterAdded:Connect(function(char)
+    hrp=char:WaitForChild("HumanoidRootPart")
+end)
+local lastTarget=nil
+local cooldown=false
+local range=11
+local function isBehindTarget(hrp,targetHRP)
+    if not(hrp and targetHRP)then return false end
+    local lookVector=targetHRP.CFrame.LookVector
+    local toTarget=(hrp.Position-targetHRP.Position).Unit
+    local dot=lookVector:Dot(toTarget)
+    return dot>0.5
+end
+RunService.Heartbeat:Connect(function()
+    if not enabled then return end
+    if cooldown then return end
+    if not lp.Character or not hrp then return end
+    for _,killer in ipairs(Players:GetPlayers())do
+        if killer~=lp and killer.Character and killer.Character:FindFirstChild("HumanoidRootPart")then
+            local kHRP=killer.Character.HumanoidRootPart
+            local dist=(hrp.Position-kHRP.Position).Magnitude
+            if dist<=range then
+                if mode=="Legit" then
+                    if isBehindTarget(hrp,kHRP) and killer~=lastTarget then
+                        cooldown=true
+                        lastTarget=killer
+                        task.wait(0.1)
+                        local start=tick()
+                        local didDagger=false
+                        local connection
+                        connection=RunService.Heartbeat:Connect(function()
+                            if not(hrp and kHRP and kHRP.Parent)then
+                                if connection then connection:Disconnect()end
+                                return
+                            end
+                            local elapsed=tick()-start
+                            if elapsed>=0.5 then
+                                if connection then connection:Disconnect()end
+                                return
+                            end
+                            if not didDagger then
+                                didDagger=true
+                                task.wait(0.15)
+                                daggerRemote:FireServer("UseActorAbility","Dagger")
+                            end
+                        end)
+                    end
+                else
+                    if isBehindTarget(hrp,kHRP) and killer~=lastTarget then
+                        cooldown=true
+                        lastTarget=killer
+                        task.wait(0.1)
+                        local start=tick()
+                        local didDagger=false
+                        local connection
+                        connection=RunService.Heartbeat:Connect(function()
+                            if not(hrp and kHRP and kHRP.Parent)then
+                                if connection then connection:Disconnect()end
+                                return
+                            end
+                            local elapsed=tick()-start
+                            if elapsed>=0.7 then
+                                if connection then connection:Disconnect()end
+                                return
+                            end
+                            if not didDagger then
+                                didDagger=true
+                                task.wait(0.15)
+                                daggerRemote:FireServer("UseActorAbility","Dagger")
+                            end
+                        end)
+                    end
+                end
+            end
+        end
+    end
+end)
