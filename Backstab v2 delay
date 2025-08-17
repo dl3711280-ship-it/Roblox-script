@@ -164,7 +164,7 @@ local r5=mkRow(36);mkHL(r5);local lblMode=mkLabel(r5,"Mode",0.45);local modeBtn=
 local r6=mkRow(36);mkHL(r6);local lblLegit=mkLabel(r6,"Legit Aimbot",0.55);local legitBtn=mkToggle(r6,90,"OFF")
 
 local footer=Instance.new("Frame")
-footer.BackgroundColor3=Color3.fromRGB(18,18,18)
+footer.BackgroundTransparency=1
 footer.BorderSizePixel=0
 footer.Size=UDim2.new(1,0,0,36)
 footer.Position=UDim2.new(0,0,1,-36)
