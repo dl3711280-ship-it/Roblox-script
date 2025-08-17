@@ -7,46 +7,53 @@ local Camera = workspace.CurrentCamera
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Parent = ScreenGui
-ToggleButton.Position = UDim2.new(0, 10, 0, 10)
-ToggleButton.Size = UDim2.new(0, 100, 0, 40)
-ToggleButton.Text = "BulletLock: OFF"
-ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-ToggleButton.TextColor3 = Color3.fromRGB(255,255,255)
+local Toggle = Instance.new("TextButton")
+Toggle.Size = UDim2.new(0,100,0,40)
+Toggle.Position = UDim2.new(0,10,0,10)
+Toggle.BackgroundColor3 = Color3.fromRGB(0,255,0)
+Toggle.Text = "BodyLock OFF"
+Toggle.Parent = ScreenGui
 
-local FOVBox = Instance.new("TextBox")
-FOVBox.Parent = ScreenGui
-FOVBox.Position = UDim2.new(0, 10, 0, 60)
-FOVBox.Size = UDim2.new(0, 100, 0, 30)
-FOVBox.PlaceholderText = "FOV"
-FOVBox.Text = "60"
-FOVBox.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-FOVBox.TextColor3 = Color3.fromRGB(255,255,255)
+local FovBox = Instance.new("TextBox")
+FovBox.Size = UDim2.new(0,60,0,30)
+FovBox.Position = UDim2.new(0,120,0,15)
+FovBox.BackgroundColor3 = Color3.fromRGB(0,255,0)
+FovBox.Text = "60"
+FovBox.Parent = ScreenGui
 
-local enabled = false
-local fov = 60
+local Circle = Drawing.new("Circle")
+Circle.Visible = true
+Circle.Color = Color3.fromRGB(0,255,0)
+Circle.Thickness = 2
+Circle.NumSides = 50
+Circle.Filled = false
+Circle.Radius = tonumber(FovBox.Text)
+Circle.Position = Camera.ViewportSize/2
 
-ToggleButton.MouseButton1Click:Connect(function()
-    enabled = not enabled
-    ToggleButton.Text = enabled and "BulletLock: ON" or "BulletLock: OFF"
+local Enabled = false
+
+Toggle.MouseButton1Click:Connect(function()
+    Enabled = not Enabled
+    Toggle.Text = Enabled and "BodyLock ON" or "BodyLock OFF"
 end)
 
-FOVBox.FocusLost:Connect(function()
-    local n = tonumber(FOVBox.Text)
-    if n then fov = n end
+FovBox.FocusLost:Connect(function()
+    local v = tonumber(FovBox.Text)
+    if v then
+        Circle.Radius = v
+    end
 end)
 
-local function getClosest()
-    local closest,dist = nil,fov
+local function getTarget()
+    local closest,dist
     for _,plr in pairs(Players:GetPlayers()) do
-        if plr~=LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") and plr.Character:FindFirstChild("Humanoid").Health>0 then
-            local pos,_ = Camera:WorldToViewportPoint(plr.Character.HumanoidRootPart.Position)
-            if _.Z>0 then
-                local mag = (Vector2.new(pos.X,pos.Y)-Vector2.new(Camera.ViewportSize.X/2,Camera.ViewportSize.Y/2)).Magnitude
-                if mag<dist then
-                    dist=mag
-                    closest=plr
+        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            local pos,onscreen = Camera:WorldToViewportPoint(plr.Character.HumanoidRootPart.Position)
+            if onscreen then
+                local mag = (Vector2.new(pos.X,pos.Y) - (Camera.ViewportSize/2)).Magnitude
+                if mag < Circle.Radius and (not dist or mag < dist) then
+                    dist = mag
+                    closest = plr
                 end
             end
         end
@@ -54,25 +61,27 @@ local function getClosest()
     return closest
 end
 
-local function shoot()
+local function shoot(target)
     local gun = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Gun")
-    if not gun then return end
-    if gun:FindFirstChild("KnifeLocal") and gun.KnifeLocal:FindFirstChild("CreateBeam") then
+    if gun and gun:FindFirstChild("KnifeLocal") and gun.KnifeLocal:FindFirstChild("CreateBeam") then
         local rf = gun.KnifeLocal.CreateBeam:FindFirstChildOfClass("RemoteFunction")
-        if rf then
-            local target = enabled and getClosest()
-            if target then
-                rf:InvokeServer(target.Character.HumanoidRootPart.Position)
-            else
-                rf:InvokeServer()
-            end
+        if rf and target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+            rf:InvokeServer(target.Character.HumanoidRootPart.Position)
         end
     end
 end
 
 UserInputService.InputBegan:Connect(function(input,gp)
-    if gp then return end
-    if input.UserInputType==Enum.UserInputType.MouseButton1 or input.KeyCode==Enum.KeyCode.ButtonR2 then
-        shoot()
+    if not gp and input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if Enabled then
+            local t = getTarget()
+            if t then
+                shoot(t)
+            end
+        end
     end
+end)
+
+RunService.RenderStepped:Connect(function()
+    Circle.Position = Camera.ViewportSize/2
 end)
