@@ -1,0 +1,66 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+local aimlockEnabled = false
+local fov = 50
+local lockedTarget = nil
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
+
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Parent = ScreenGui
+ToggleButton.Size = UDim2.new(0, 120, 0, 40)
+ToggleButton.Position = UDim2.new(0, 10, 0, 200)
+ToggleButton.Text = "Aimlock: OFF"
+ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+local FovCircle = Drawing.new("Circle")
+FovCircle.Color = Color3.fromRGB(0,255,0)
+FovCircle.Thickness = 2
+FovCircle.NumSides = 50
+FovCircle.Radius = fov
+FovCircle.Filled = false
+FovCircle.Visible = true
+
+ToggleButton.MouseButton1Click:Connect(function()
+    aimlockEnabled = not aimlockEnabled
+    ToggleButton.Text = "Aimlock: " .. (aimlockEnabled and "ON" or "OFF")
+    if not aimlockEnabled then
+        lockedTarget = nil
+    end
+end)
+
+local function getClosestTarget()
+    local closest, dist = nil, fov
+    for _,v in pairs(Players:GetPlayers()) do
+        if v ~= player and v.Character and v.Character:FindFirstChild("Head") then
+            local pos, vis = camera:WorldToViewportPoint(v.Character.Head.Position)
+            if vis then
+                local magnitude = (Vector2.new(pos.X,pos.Y) - UserInputService:GetMouseLocation()).Magnitude
+                if magnitude < dist then
+                    dist = magnitude
+                    closest = v
+                end
+            end
+        end
+    end
+    return closest
+end
+
+RunService.RenderStepped:Connect(function()
+    FovCircle.Position = UserInputService:GetMouseLocation()
+    if aimlockEnabled then
+        if not lockedTarget or not lockedTarget.Character or not lockedTarget.Character:FindFirstChild("Head") then
+            lockedTarget = getClosestTarget()
+        end
+        if lockedTarget and lockedTarget.Character and lockedTarget.Character:FindFirstChild("Head") then
+            camera.CFrame = CFrame.new(camera.CFrame.Position, lockedTarget.Character.Head.Position)
+        end
+    end
+end)
