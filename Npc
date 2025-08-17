@@ -1,74 +1,81 @@
-local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
-local LocalPlayer = game.Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local HRP = Character:WaitForChild("HumanoidRootPart")
+local UserInputService = game:GetService("UserInputService")
 
-local aiming = false
-local FOV = 100
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-local ScreenGui = Instance.new("ScreenGui", LocalPlayer.PlayerGui)
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0,100,0,40)
+ToggleButton.Position = UDim2.new(0,10,0,10)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(0,200,0)
+ToggleButton.Text = "BodyLock OFF"
+ToggleButton.Parent = ScreenGui
 
-local Toggle = Instance.new("TextButton", ScreenGui)
-Toggle.Size = UDim2.new(0,100,0,40)
-Toggle.Position = UDim2.new(0,10,0,10)
-Toggle.Text = "BodyLock OFF"
-Toggle.BackgroundColor3 = Color3.fromRGB(0,255,0)
+local FovBox = Instance.new("TextBox")
+FovBox.Size = UDim2.new(0,100,0,40)
+FovBox.Position = UDim2.new(0,10,0,60)
+FovBox.BackgroundColor3 = Color3.fromRGB(0,255,0)
+FovBox.Text = "60"
+FovBox.Parent = ScreenGui
 
-local Box = Instance.new("TextBox", ScreenGui)
-Box.Size = UDim2.new(0,100,0,40)
-Box.Position = UDim2.new(0,10,0,60)
-Box.Text = tostring(FOV)
-Box.BackgroundColor3 = Color3.fromRGB(0,255,0)
-
-local Circle = Instance.new("Frame", ScreenGui)
-Circle.Size = UDim2.new(0,FOV*2,0,FOV*2)
-Circle.Position = UDim2.new(0.5,-FOV,0.5,-FOV)
+local Circle = Instance.new("Frame")
+Circle.Size = UDim2.new(0,0,0,0)
+Circle.Position = UDim2.new(0.5,0,0.5,0)
 Circle.AnchorPoint = Vector2.new(0.5,0.5)
 Circle.BackgroundTransparency = 1
-local UICorner = Instance.new("UICorner", Circle)
+Circle.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(1,0)
-local UIStroke = Instance.new("UIStroke", Circle)
-UIStroke.Color = Color3.fromRGB(0,255,0)
+UICorner.Parent = Circle
+
+local UIStroke = Instance.new("UIStroke")
 UIStroke.Thickness = 2
+UIStroke.Color = Color3.fromRGB(0,255,0)
+UIStroke.Parent = Circle
 
-Toggle.MouseButton1Click:Connect(function()
-    aiming = not aiming
-    Toggle.Text = aiming and "BodyLock ON" or "BodyLock OFF"
+local enabled = false
+local fov = 60
+
+ToggleButton.MouseButton1Click:Connect(function()
+	enabled = not enabled
+	ToggleButton.Text = enabled and "BodyLock ON" or "BodyLock OFF"
 end)
 
-Box.FocusLost:Connect(function()
-    local val = tonumber(Box.Text)
-    if val then
-        FOV = val
-        Circle.Size = UDim2.new(0,FOV*2,0,FOV*2)
-        Circle.Position = UDim2.new(0.5,-FOV,0.5,-FOV)
-    end
+FovBox.FocusLost:Connect(function()
+	local num = tonumber(FovBox.Text)
+	if num then
+		fov = num
+	end
 end)
 
-local function GetClosestNPC()
-    local closest, distance = nil, FOV
-    for _, npc in pairs(workspace:GetChildren()) do
-        if npc:FindFirstChild("HumanoidRootPart") and npc:FindFirstChildOfClass("Humanoid") then
-            local pos, onScreen = Camera:WorldToViewportPoint(npc.HumanoidRootPart.Position)
-            if onScreen then
-                local mag = (Vector2.new(pos.X,pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
-                if mag < distance then
-                    distance = mag
-                    closest = npc
-                end
-            end
-        end
-    end
-    return closest
+local function getClosestNPC()
+	local closest = nil
+	local closestDist = fov
+	for _,npc in ipairs(workspace:GetChildren()) do
+		if npc:FindFirstChild("Humanoid") and npc:FindFirstChild("HumanoidRootPart") and not Players:GetPlayerFromCharacter(npc) then
+			local pos, onscreen = Camera:WorldToViewportPoint(npc.HumanoidRootPart.Position)
+			if onscreen then
+				local dist = (Vector2.new(pos.X,pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
+				if dist < closestDist then
+					closestDist = dist
+					closest = npc
+				end
+			end
+		end
+	end
+	return closest
 end
 
 RunService.RenderStepped:Connect(function()
-    if aiming then
-        local npc = GetClosestNPC()
-        if npc and npc:FindFirstChild("HumanoidRootPart") then
-            HRP.CFrame = CFrame.new(HRP.Position, Vector3.new(npc.HumanoidRootPart.Position.X, HRP.Position.Y, npc.HumanoidRootPart.Position.Z))
-        end
-    end
+	Circle.Size = UDim2.new(0,fov*6,0,fov*6)
+	if enabled then
+		local npc = getClosestNPC()
+		if npc and npc:FindFirstChild("HumanoidRootPart") then
+			Camera.CFrame = CFrame.new(Camera.CFrame.Position, npc.HumanoidRootPart.Position)
+		end
+	end
 end)
