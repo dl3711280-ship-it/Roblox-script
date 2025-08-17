@@ -1,0 +1,42 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+local crouchRemote = ReplicatedStorage.Remotes:WaitForChild("Crouch")
+local daggerRemote = ReplicatedStorage.Remotes:WaitForChild("Dagger")
+
+local function CrouchStab180()
+    crouchRemote:FireServer()
+    task.wait(0.05)
+    daggerRemote:FireServer()
+    hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(180), 0)
+end
+
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+
+local comboBtn = Instance.new("TextButton", screenGui)
+comboBtn.Size = UDim2.new(0, 150, 0, 50)
+comboBtn.Position = UDim2.new(0.4, 0, 0.8, 0)
+comboBtn.Text = "Crouch + Stab 180°"
+comboBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+comboBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+comboBtn.Font = Enum.Font.SourceSansBold
+comboBtn.TextSize = 20
+comboBtn.Visible = true
+
+comboBtn.MouseButton1Click:Connect(CrouchStab180)
+
+local toggleBtn = Instance.new("TextButton", screenGui)
+toggleBtn.Size = UDim2.new(0, 100, 0, 40)
+toggleBtn.Position = UDim2.new(0.8, 0, 0.05, 0)
+toggleBtn.Text = "Hide Combo"
+toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.Font = Enum.Font.SourceSansBold
+toggleBtn.TextSize = 18
+
+toggleBtn.MouseButton1Click:Connect(function()
+    comboBtn.Visible = not comboBtn.Visible
+    toggleBtn.Text = comboBtn.Visible and "Hide Combo" or "Show Combo"
+end)
