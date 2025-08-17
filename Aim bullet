@@ -1,84 +1,84 @@
-local Players = game:GetService("Players")
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 200, 0, 150)
+Frame.Position = UDim2.new(0, 10, 0, 10)
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+
+local AimButton = Instance.new("TextButton", Frame)
+AimButton.Size = UDim2.new(0, 180, 0, 40)
+AimButton.Position = UDim2.new(0, 10, 0, 10)
+AimButton.Text = "Aimlock: OFF"
+AimButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+AimButton.TextColor3 = Color3.new(1,1,1)
+
+local FovBox = Instance.new("TextBox", Frame)
+FovBox.Size = UDim2.new(0, 180, 0, 30)
+FovBox.Position = UDim2.new(0, 10, 0, 60)
+FovBox.Text = "45"
+FovBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+FovBox.TextColor3 = Color3.new(1,1,1)
+
+local BodyButton = Instance.new("TextButton", Frame)
+BodyButton.Size = UDim2.new(0, 180, 0, 40)
+BodyButton.Position = UDim2.new(0, 10, 0, 100)
+BodyButton.Text = "Bodylock: OFF"
+BodyButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+BodyButton.TextColor3 = Color3.new(1,1,1)
+
+local Circle = Drawing.new("Circle")
+Circle.Color = Color3.fromRGB(0,255,0)
+Circle.Thickness = 2
+Circle.NumSides = 64
+Circle.Filled = false
+Circle.Transparency = 1
+Circle.Radius = tonumber(FovBox.Text)
+Circle.Visible = true
+
+local cam = game.Workspace.CurrentCamera
 local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local AimEnabled = false
+local BodyEnabled = false
+local Target
 
-local player = Players.LocalPlayer
-local mouse = player:GetMouse()
-
-local aimEnabled = false
-local fov = 50
-
-local ScreenGui = Instance.new("ScreenGui", player.PlayerGui)
-
-local ToggleButton = Instance.new("TextButton", ScreenGui)
-ToggleButton.Size = UDim2.new(0, 140, 0, 50)
-ToggleButton.Position = UDim2.new(0, 20, 0, 200)
-ToggleButton.Text = "BodyLock: OFF"
-ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-ToggleButton.TextColor3 = Color3.new(1,1,1)
-ToggleButton.TextScaled = true
-ToggleButton.BorderSizePixel = 0
-ToggleButton.AutoButtonColor = true
-
-local FOVBox = Instance.new("TextBox", ScreenGui)
-FOVBox.Size = UDim2.new(0, 100, 0, 40)
-FOVBox.Position = UDim2.new(0, 20, 0, 260)
-FOVBox.PlaceholderText = "FOV"
-FOVBox.Text = tostring(fov)
-FOVBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-FOVBox.TextColor3 = Color3.new(1,1,1)
-FOVBox.TextScaled = true
-FOVBox.BorderSizePixel = 0
-
-local FOVCircle = Drawing.new("Circle")
-FOVCircle.Visible = true
-FOVCircle.Color = Color3.fromRGB(0,255,0)
-FOVCircle.Thickness = 2
-FOVCircle.NumSides = 50
-FOVCircle.Filled = false
-FOVCircle.Radius = fov
-FOVCircle.Position = workspace.CurrentCamera.ViewportSize/2
-
-ToggleButton.MouseButton1Click:Connect(function()
-    aimEnabled = not aimEnabled
-    ToggleButton.Text = aimEnabled and "BodyLock: ON" or "BodyLock: OFF"
+AimButton.MouseButton1Click:Connect(function()
+    AimEnabled = not AimEnabled
+    AimButton.Text = AimEnabled and "Aimlock: ON" or "Aimlock: OFF"
 end)
 
-FOVBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local val = tonumber(FOVBox.Text)
-        if val and val > 0 then
-            fov = val
-        else
-            FOVBox.Text = tostring(fov)
-        end
-    end
+BodyButton.MouseButton1Click:Connect(function()
+    BodyEnabled = not BodyEnabled
+    BodyButton.Text = BodyEnabled and "Bodylock: ON" or "Bodylock: OFF"
 end)
 
-mouse.Button1Down:Connect(function()
-    if aimEnabled then
-        local closest,dist
-        for _,v in pairs(Players:GetPlayers()) do
-            if v ~= player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-                local hrp = v.Character.HumanoidRootPart
-                local pos,vis = workspace.CurrentCamera:WorldToViewportPoint(hrp.Position)
-                if vis then
-                    local mag = (Vector2.new(pos.X,pos.Y) - (workspace.CurrentCamera.ViewportSize/2)).Magnitude
-                    if mag < fov then
-                        if not dist or mag < dist then
-                            dist = mag
-                            closest = hrp
-                        end
-                    end
-                end
-            end
-        end
-        if closest then
-            mouse.TargetFilter = closest.Parent
-        end
+FovBox.FocusLost:Connect(function()
+    local val = tonumber(FovBox.Text)
+    if val then
+        Circle.Radius = val
     end
 end)
 
 RunService.RenderStepped:Connect(function()
-    FOVCircle.Position = workspace.CurrentCamera.ViewportSize/2
-    FOVCircle.Radius = fov
+    Circle.Position = cam.ViewportSize/2
+    local closest,dist
+    for _,plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            local pos,onscreen = cam:WorldToViewportPoint(plr.Character.HumanoidRootPart.Position)
+            if onscreen then
+                local mag = (Vector2.new(pos.X,pos.Y)-cam.ViewportSize/2).Magnitude
+                if mag < Circle.Radius and (not dist or mag < dist) then
+                    dist = mag
+                    closest = plr
+                end
+            end
+        end
+    end
+    Target = closest
+    if AimEnabled and Target and Target.Character and Target.Character:FindFirstChild("Head") then
+        cam.CFrame = CFrame.new(cam.CFrame.Position, Target.Character.Head.Position)
+    end
+    if BodyEnabled and Target and Target.Character and Target.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(LocalPlayer.Character.HumanoidRootPart.Position, Target.Character.HumanoidRootPart.Position)
+    end
 end)
