@@ -1,81 +1,74 @@
 local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
-local UserInputService = game:GetService("UserInputService")
 
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-
-local ToggleButton = Instance.new("TextButton")
+local ScreenGui = Instance.new("ScreenGui", LocalPlayer.PlayerGui)
+local ToggleButton = Instance.new("TextButton", ScreenGui)
 ToggleButton.Size = UDim2.new(0,100,0,40)
 ToggleButton.Position = UDim2.new(0,10,0,10)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(0,200,0)
-ToggleButton.Text = "BodyLock OFF"
-ToggleButton.Parent = ScreenGui
+ToggleButton.BackgroundColor3 = Color3.fromRGB(0,255,0)
+ToggleButton.Text = "SilentAim OFF"
 
-local FovBox = Instance.new("TextBox")
-FovBox.Size = UDim2.new(0,100,0,40)
-FovBox.Position = UDim2.new(0,10,0,60)
-FovBox.BackgroundColor3 = Color3.fromRGB(0,255,0)
-FovBox.Text = "60"
-FovBox.Parent = ScreenGui
+local FovBox = Instance.new("TextBox", ScreenGui)
+FovBox.Size = UDim2.new(0,60,0,30)
+FovBox.Position = UDim2.new(0,120,0,15)
+FovBox.Text = "50"
 
-local Circle = Instance.new("Frame")
-Circle.Size = UDim2.new(0,0,0,0)
-Circle.Position = UDim2.new(0.5,0,0.5,0)
-Circle.AnchorPoint = Vector2.new(0.5,0.5)
-Circle.BackgroundTransparency = 1
-Circle.Parent = ScreenGui
+local FovCircle = Drawing.new("Circle")
+FovCircle.Visible = true
+FovCircle.Thickness = 2
+FovCircle.Color = Color3.fromRGB(0,255,0)
+FovCircle.Radius = 50
+FovCircle.Filled = false
 
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(1,0)
-UICorner.Parent = Circle
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Thickness = 2
-UIStroke.Color = Color3.fromRGB(0,255,0)
-UIStroke.Parent = Circle
-
-local enabled = false
-local fov = 60
-
+local Enabled = false
 ToggleButton.MouseButton1Click:Connect(function()
-	enabled = not enabled
-	ToggleButton.Text = enabled and "BodyLock ON" or "BodyLock OFF"
+    Enabled = not Enabled
+    ToggleButton.Text = Enabled and "SilentAim ON" or "SilentAim OFF"
+    ToggleButton.BackgroundColor3 = Enabled and Color3.fromRGB(0,200,0) or Color3.fromRGB(200,0,0)
 end)
 
 FovBox.FocusLost:Connect(function()
-	local num = tonumber(FovBox.Text)
-	if num then
-		fov = num
-	end
+    local val = tonumber(FovBox.Text)
+    if val then
+        FovCircle.Radius = val
+    end
 end)
 
 local function getClosestNPC()
-	local closest = nil
-	local closestDist = fov
-	for _,npc in ipairs(workspace:GetChildren()) do
-		if npc:FindFirstChild("Humanoid") and npc:FindFirstChild("HumanoidRootPart") and not Players:GetPlayerFromCharacter(npc) then
-			local pos, onscreen = Camera:WorldToViewportPoint(npc.HumanoidRootPart.Position)
-			if onscreen then
-				local dist = (Vector2.new(pos.X,pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
-				if dist < closestDist then
-					closestDist = dist
-					closest = npc
-				end
-			end
-		end
-	end
-	return closest
+    local closest, dist = nil, math.huge
+    for _,npc in pairs(workspace:GetChildren()) do
+        if npc:FindFirstChild("HumanoidRootPart") and npc:FindFirstChildOfClass("Humanoid") then
+            local pos, onScreen = Camera:WorldToViewportPoint(npc.HumanoidRootPart.Position)
+            if onScreen then
+                local mag = (Vector2.new(pos.X,pos.Y) - UserInputService:GetMouseLocation()).Magnitude
+                if mag < FovCircle.Radius and mag < dist then
+                    dist = mag
+                    closest = npc
+                end
+            end
+        end
+    end
+    return closest
 end
 
 RunService.RenderStepped:Connect(function()
-	Circle.Size = UDim2.new(0,fov*6,0,fov*6)
-	if enabled then
-		local npc = getClosestNPC()
-		if npc and npc:FindFirstChild("HumanoidRootPart") then
-			Camera.CFrame = CFrame.new(Camera.CFrame.Position, npc.HumanoidRootPart.Position)
-		end
-	end
+    FovCircle.Position = UserInputService:GetMouseLocation()
 end)
+
+local mt = getrawmetatable(game)
+local old = mt.__namecall
+setreadonly(mt,false)
+mt.__namecall = function(self,...)
+    local args = {...}
+    if Enabled and getnamecallmethod()=="FireServer" and typeof(args[2])=="Vector3" then
+        local npc = getClosestNPC()
+        if npc then
+            args[2] = npc.HumanoidRootPart.Position
+            return old(self,unpack(args))
+        end
+    end
+    return old(self,...)
+end
