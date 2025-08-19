@@ -395,7 +395,7 @@ RunService.RenderStepped:Connect(function()
 			if mode=="Behind" then
 				local dirTo=(kHRP.Position-hrp.Position).Unit
 				local dot=hrp.CFrame.LookVector:Dot(dirTo)
-				if dot < -0.6 then
+				if dot>0.6 then
 					statusText.Text="Blocked: target not behind"
 					return
 				end
