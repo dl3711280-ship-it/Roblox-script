@@ -348,7 +348,7 @@ end
 local function isBehindTarget(hrp,targetHRP)
 	local distance=(hrp.Position-targetHRP.Position).Magnitude
 	if distance>range then return false end
-	if mode=="Behind" then return true else
+	if mode=="Around" then return true else
 	local dir=-targetHRP.CFrame.LookVector
 		local toP=(hrp.Position-targetHRP.Position)
 		return toP:Dot(dir) < -0.5
@@ -395,8 +395,8 @@ RunService.RenderStepped:Connect(function()
 			if mode=="Behind" then
 				local dirTo=(kHRP.Position-hrp.Position).Unit
 				local dot=hrp.CFrame.LookVector:Dot(dirTo)
-				if dot>0.6 then
-					statusText.Text="Blocked: target in front"
+				if dot < -0.6 then
+					statusText.Text="Blocked: target not behind"
 					return
 				end
 			end
