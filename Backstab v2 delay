@@ -349,7 +349,7 @@ local function isBehindTarget(hrp,targetHRP)
 	local distance=(hrp.Position-targetHRP.Position).Magnitude
 	if distance>range then return false end
 	if mode=="Around" then return true else
-		local dir=-targetHRP.CFrame.LookVector
+	if mode=="Behind" then return true else	local dir=-targetHRP.CFrame.LookVector
 		local toP=(hrp.Position-targetHRP.Position)
 		return toP:Dot(dir) < -0.5
 	end
