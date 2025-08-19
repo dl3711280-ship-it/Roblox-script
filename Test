@@ -1,0 +1,45 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local function isBehind(target)
+    if not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then
+        return false
+    end
+    local hrp = target.Character.HumanoidRootPart
+    local myHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not myHRP then return false end
+    local look = hrp.CFrame.LookVector
+    local dir = (myHRP.Position - hrp.Position).Unit
+    local dot = look:Dot(dir)
+    return dot > 0.5
+end
+
+local function backstab(target)
+    if isBehind(target) then
+        local knife = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Knife")
+        if knife and knife:FindFirstChild("Stab") then
+            local stabEvent = knife:FindFirstChild("Stab")
+            stabEvent:FireServer()
+            task.wait(0.25)
+            stabEvent:FireServer()
+        end
+    end
+end
+
+local function getTarget()
+    for _,plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Humanoid") then
+            if plr.Character.Humanoid.Health > 0 then
+                return plr
+            end
+        end
+    end
+    return nil
+end
+
+while task.wait(0.1) do
+    local target = getTarget()
+    if target then
+        backstab(target)
+    end
+end
