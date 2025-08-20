@@ -449,7 +449,7 @@ RunService.RenderStepped:Connect(function()
 						end
 					end)
 						while kHRP and hrp and isBehindTarget(hrp,kHRP) do
-							RunService.Heartbeat:Wait()
+							task.wait(0)
 						end
 						lastTarget=nil
 					end)
