@@ -448,7 +448,6 @@ RunService.RenderStepped:Connect(function()
 							statusText.Text="Stab ("..attackType..")"
 						end
 					end)
-					task.delay(2,function()
 						while kHRP and hrp and isBehindTarget(hrp,kHRP) do
 							RunService.Heartbeat:Wait()
 						end
