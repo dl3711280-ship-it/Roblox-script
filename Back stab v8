@@ -1,462 +1,381 @@
-local Players=game:GetService("Players")
-local ReplicatedStorage=game:GetService("ReplicatedStorage")
-local RunService=game:GetService("RunService")
-local UserInputService=game:GetService("UserInputService")
-local Stats=game:GetService("Stats")
-local lp=Players.LocalPlayer
+local Players = game:GetService("Players") 
+local ReplicatedStorage = game:GetService("ReplicatedStorage") 
+local RunService = game:GetService("RunService") 
+local lp = Players.LocalPlayer
 
-local screenGui=Instance.new("ScreenGui")
-screenGui.Name="BackstabUI_Compact"
-screenGui.ResetOnSpawn=false
-screenGui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
-screenGui.Parent=lp:WaitForChild("PlayerGui")
+-- GUI Setup 
+local screenGui = Instance.new("ScreenGui") 
+screenGui.Name = "BackstabToggleGui" 
+screenGui.ResetOnSpawn = false 
+screenGui.Parent = lp:WaitForChild("PlayerGui")
 
-local root=Instance.new("Frame")
-root.Size=UDim2.new(0,260,0,250)
-root.Position=UDim2.new(0,20,0,20)
-root.BackgroundColor3=Color3.fromRGB(24,24,24)
-root.BorderSizePixel=0
-root.Parent=screenGui
-local rootCorner=Instance.new("UICorner")
-rootCorner.CornerRadius=UDim.new(0,12)
-rootCorner.Parent=root
-local rootStroke=Instance.new("UIStroke")
-rootStroke.Thickness=1
-rootStroke.Color=Color3.fromRGB(60,60,60)
-rootStroke.Parent=root
+-- Toggle Button 
+local toggleButton = Instance.new("TextButton") 
+toggleButton.Size = UDim2.new(0, 150, 0, 40) 
+toggleButton.Position = UDim2.new(0, 10, 0, 10) 
+toggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30) 
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255) 
+toggleButton.Font = Enum.Font.SourceSansBold 
+toggleButton.TextSize = 20 
+toggleButton.Text = "Backstab: OFF" 
+toggleButton.Parent = screenGui
 
-local header=Instance.new("Frame")
-header.Name="Header"
-header.Size=UDim2.new(1,0,0,36)
-header.BackgroundColor3=Color3.fromRGB(18,18,18)
-header.BorderSizePixel=0
-header.Parent=root
-local headerCorner=Instance.new("UICorner")
-headerCorner.CornerRadius=UDim.new(0,12)
-headerCorner.Parent=header
+-- Range Label 
+local rangeLabel = Instance.new("TextLabel") 
+rangeLabel.Size = UDim2.new(0, 150, 0, 20) 
+rangeLabel.Position = UDim2.new(0, 10, 0, 55) 
+rangeLabel.BackgroundTransparency = 1 
+rangeLabel.TextColor3 = Color3.fromRGB(255, 255, 255) 
+rangeLabel.Font = Enum.Font.SourceSans 
+rangeLabel.TextSize = 16 
+rangeLabel.Text = "Range:" 
+rangeLabel.Parent = screenGui
 
-local title=Instance.new("TextLabel")
-title.BackgroundTransparency=1
-title.Position=UDim2.new(0,12,0,0)
-title.Size=UDim2.new(1,-130,1,0)
-title.Font=Enum.Font.SourceSansBold
-title.Text="Backstab"
-title.TextSize=20
-title.TextXAlignment=Enum.TextXAlignment.Left
-title.TextColor3=Color3.fromRGB(240,240,240)
-title.Parent=header
+-- TextBox for Range Input 
+local rangeBox = Instance.new("TextBox") 
+rangeBox.Size = UDim2.new(0, 150, 0, 25) 
+rangeBox.Position = UDim2.new(0, 10, 0, 75) 
+rangeBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50) 
+rangeBox.TextColor3 = Color3.fromRGB(255, 255, 255) 
+rangeBox.Font = Enum.Font.SourceSans 
+rangeBox.TextSize = 16 
+rangeBox.PlaceholderText = "Enter range (number)" 
+rangeBox.Text = "4" 
+rangeBox.ClearTextOnFocus = false 
+rangeBox.Parent = screenGui
 
-local topBtns=Instance.new("Frame")
-topBtns.BackgroundTransparency=1
-topBtns.AnchorPoint=Vector2.new(1,0)
-topBtns.Position=UDim2.new(1,-8,0,4)
-topBtns.Size=UDim2.new(0,120,0,28)
-topBtns.Parent=header
-local topList=Instance.new("UIListLayout")
-topList.FillDirection=Enum.FillDirection.Horizontal
-topList.HorizontalAlignment=Enum.HorizontalAlignment.Right
-topList.VerticalAlignment=Enum.VerticalAlignment.Center
-topList.Padding=UDim.new(0,6)
-topList.Parent=topBtns
+-- Vars 
+local enabled = false 
+local cooldown = false 
+local lastTarget = nil 
+local range = 4 
+local daggerRemote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent") 
+local killerNames = { "Jason", "c00lkidd", "JohnDoe", "1x1x1x1", "Noli" } 
+local killersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
 
-local function mkBtn(w,txt)
-	local b=Instance.new("TextButton")
-	b.Size=UDim2.new(0,w,1,0)
-	b.Text=txt
-	b.Font=Enum.Font.SourceSansSemibold
-	b.TextSize=16
-	b.BackgroundColor3=Color3.fromRGB(36,36,36)
-	b.TextColor3=Color3.fromRGB(255,255,255)
-	local c=Instance.new("UICorner");c.CornerRadius=UDim.new(0,8);c.Parent=b
-	local s=Instance.new("UIStroke");s.Thickness=1;s.Color=Color3.fromRGB(64,64,64);s.Parent=b
-	b.Parent=topBtns
-	return b
-end
-
-local hideBtn=mkBtn(52,"Hide")
-
-local body=Instance.new("Frame")
-body.Name="Body"
-body.BackgroundTransparency=1
-body.Position=UDim2.new(0,0,0,36)
-body.Size=UDim2.new(1,0,1,-72)
-body.Parent=root
-local pad=Instance.new("UIPadding")
-pad.PaddingTop=UDim.new(0,10)
-pad.PaddingLeft=UDim.new(0,10)
-pad.PaddingRight=UDim.new(0,10)
-pad.Parent=body
-local list=Instance.new("UIListLayout")
-list.FillDirection=Enum.FillDirection.Vertical
-list.HorizontalAlignment=Enum.HorizontalAlignment.Center
-list.VerticalAlignment=Enum.VerticalAlignment.Top
-list.SortOrder=Enum.SortOrder.LayoutOrder
-list.Padding=UDim.new(0,8)
-list.Parent=body
-
-local function mkRow(h)
-	local f=Instance.new("Frame")
-	f.Size=UDim2.new(1,0,0,h or 40)
-	f.BackgroundColor3=Color3.fromRGB(28,28,28)
-	f.BorderSizePixel=0
-	local c=Instance.new("UICorner");c.CornerRadius=UDim.new(0,8);c.Parent=f
-	local s=Instance.new("UIStroke");s.Thickness=1;s.Color=Color3.fromRGB(55,55,55);s.Parent=f
-	f.Parent=body
-	return f
-end
-local function mkHL(row)
-	local l=Instance.new("UIListLayout")
-	l.FillDirection=Enum.FillDirection.Horizontal
-	l.Padding=UDim.new(0,8)
-	l.VerticalAlignment=Enum.VerticalAlignment.Center
-	l.HorizontalAlignment=Enum.HorizontalAlignment.Left
-	l.Parent=row
-end
-local function mkLabel(p,txt,scale)
-	local t=Instance.new("TextLabel")
-	t.BackgroundTransparency=1
-	t.Size=UDim2.new(scale or 0.5,0,1,0)
-	t.Font=Enum.Font.SourceSansSemibold
-	t.Text=txt
-	t.TextXAlignment=Enum.TextXAlignment.Left
-	t.TextSize=18
-	t.TextColor3=Color3.fromRGB(230,230,230)
-	t.Parent=p
-	return t
-end
-local function mkInput(p,defaultW,txt)
-	local b=Instance.new("TextBox")
-	b.Size=UDim2.new(0,defaultW,0,28)
-	b.Font=Enum.Font.SourceSans
-	b.TextSize=16
-	b.Text=txt
-	b.PlaceholderText=txt
-	b.BackgroundColor3=Color3.fromRGB(40,40,40)
-	b.TextColor3=Color3.fromRGB(255,255,255)
-	b.ClearTextOnFocus=false
-	b.Parent=p
-	local c=Instance.new("UICorner");c.CornerRadius=UDim.new(0,8);c.Parent=b
-	local s=Instance.new("UIStroke");s.Thickness=1;s.Color=Color3.fromRGB(66,66,66);s.Parent=b
-	return b
-end
-local function mkToggle(p,w,txt)
-	local b=Instance.new("TextButton")
-	b.Size=UDim2.new(0,w,0,30)
-	b.Text=txt
-	b.Font=Enum.Font.SourceSansBold
-	b.TextSize=18
-	b.BackgroundColor3=Color3.fromRGB(50,50,50)
-	b.TextColor3=Color3.fromRGB(255,255,255)
-	b.Parent=p
-	local c=Instance.new("UICorner");c.CornerRadius=UDim.new(0,8);c.Parent=b
-	local s=Instance.new("UIStroke");s.Thickness=1;s.Color=Color3.fromRGB(76,76,76);s.Parent=b
-	return b
-end
-
-local r1=mkRow(40);mkHL(r1);local lblMaster=mkLabel(r1,"Backstab",0.55);local toggleBtn=mkToggle(r1,90,"OFF")
-
-local r2=mkRow(36);mkHL(r2);local lblRange=mkLabel(r2,"Range",0.55);local rangeBox=mkInput(r2,90,"4")
-local r3=mkRow(36);mkHL(r3);local lblDelay=mkLabel(r3,"Delay (s)",0.55);local delayBox=mkInput(r3,90,"0.20")
-
-local r4=mkRow(36);mkHL(r4);local lblType=mkLabel(r4,"Type",0.45);local typeBtn=mkToggle(r4,130,"Normal")
-local r5=mkRow(36);mkHL(r5);local lblMode=mkLabel(r5,"Mode",0.45);local modeBtn=mkToggle(r5,130,"Behind")
-
-local r6=mkRow(36);mkHL(r6);local lblLegit=mkLabel(r6,"Legit Aimbot",0.55);local legitBtn=mkToggle(r6,90,"OFF")
-
-local footer=Instance.new("Frame")
-footer.BackgroundTransparency=1
-footer.BorderSizePixel=0
-footer.Size=UDim2.new(1,0,0,36)
-footer.Position=UDim2.new(0,0,1,-36)
-footer.Parent=root
-local statusText=Instance.new("TextLabel")
-statusText.BackgroundTransparency=1
-statusText.Size=UDim2.new(1,-16,1,0)
-statusText.Position=UDim2.new(0,8,0,0)
-statusText.Font=Enum.Font.SourceSansItalic
-statusText.Text="Ready"
-statusText.TextXAlignment=Enum.TextXAlignment.Left
-statusText.TextSize=14
-statusText.TextColor3=Color3.fromRGB(180,180,180)
-statusText.Parent=footer
-
-local showBtnGui=Instance.new("ScreenGui")
-showBtnGui.Name="BackstabUI_Show"
-showBtnGui.ResetOnSpawn=false
-showBtnGui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
-showBtnGui.Parent=lp.PlayerGui
-local showBtn=Instance.new("TextButton")
-showBtn.Size=UDim2.new(0,70,0,26)
-showBtn.Position=UDim2.new(0,20,0,20)
-showBtn.Text="Show"
-showBtn.Font=Enum.Font.SourceSansSemibold
-showBtn.TextSize=16
-showBtn.BackgroundColor3=Color3.fromRGB(36,36,36)
-showBtn.TextColor3=Color3.fromRGB(255,255,255)
-showBtn.Visible=false
-showBtn.Parent=showBtnGui
-local sbc=Instance.new("UICorner");sbc.CornerRadius=UDim.new(0,8);sbc.Parent=showBtn
-local sbs=Instance.new("UIStroke");sbs.Thickness=1;sbs.Color=Color3.fromRGB(64,64,64);sbs.Parent=showBtn
-
-local dragging=false
-local dragStart
-local startPos
-header.InputBegan:Connect(function(input)
-	if input.UserInputType==Enum.UserInputType.MouseButton1 then
-		dragging=true
-		dragStart=input.Position
-		startPos=root.Position
-		input.Changed:Connect(function()
-			if input.UserInputState==Enum.UserInputState.End then
-				dragging=false
-			end
-		end)
-	end
+-- GUI toggle 
+toggleButton.MouseButton1Click:Connect(function() 
+    enabled = not enabled 
+    toggleButton.Text = "Backstab: " .. (enabled and "ON" or "OFF") 
+    toggleButton.BackgroundColor3 = enabled and Color3.fromRGB(50, 150, 50) or Color3.fromRGB(30, 30, 30) 
 end)
-UserInputService.InputChanged:Connect(function(input)
-	if dragging and input.UserInputType==Enum.UserInputType.MouseMovement then
-		local d=input.Position-dragStart
-		root.Position=UDim2.new(startPos.X.Scale,startPos.X.Offset+d.X,startPos.Y.Scale,startPos.Y.Offset+d.Y)
+
+-- TextBox Range Handling 
+rangeBox.FocusLost:Connect(function() 
+    local input = tonumber(rangeBox.Text) 
+    if input and input >= 1 then 
+        range = input 
+    else 
+        rangeBox.Text = tostring(range) 
+    end 
+end)
+
+-- Mode Toggle 
+local mode = "Behind" 
+local modeButton = Instance.new("TextButton") 
+modeButton.Size = UDim2.new(0, 150, 0, 25) 
+modeButton.Position = UDim2.new(0, 10, 0, 105) 
+modeButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70) 
+modeButton.TextColor3 = Color3.fromRGB(255, 255, 255) 
+modeButton.Font = Enum.Font.SourceSans 
+modeButton.TextSize = 16 
+modeButton.Text = "Mode: Behind" 
+modeButton.Parent = screenGui
+
+modeButton.MouseButton1Click:Connect(function() 
+    if mode == "Behind" then 
+        mode = "Around" 
+    else 
+        mode = "Behind" 
+    end 
+    modeButton.Text = "Mode: " .. mode 
+end)
+
+-- Match Facing Toggle (only for Legit mode)
+local matchFacing = false
+local facingButton = Instance.new("TextButton")
+facingButton.Size = UDim2.new(0, 150, 0, 25)
+facingButton.Position = UDim2.new(0, 10, 0, 165) -- under Backstab Type button
+facingButton.BackgroundColor3 = Color3.fromRGB(110, 110, 110)
+facingButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+facingButton.Font = Enum.Font.SourceSans
+facingButton.TextSize = 16
+facingButton.Text = "Legit Aimbot: OFF"
+facingButton.Visible = false -- hidden until Legit mode
+facingButton.Parent = screenGui
+
+facingButton.MouseButton1Click:Connect(function()
+    matchFacing = not matchFacing
+    facingButton.Text = "Legit Aimbot: " .. (matchFacing and "ON" or "OFF")
+    facingButton.BackgroundColor3 = matchFacing and Color3.fromRGB(50, 150, 50) or Color3.fromRGB(110, 110, 110)
+end)
+
+-- Attack type button (Normal / Counter)
+local attackType = "Normal"
+local attackButton = Instance.new("TextButton")
+attackButton.Size = UDim2.new(0, 150, 0, 25)
+attackButton.Position = UDim2.new(0, 10, 0, 135) -- under mode button
+attackButton.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+attackButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+attackButton.Font = Enum.Font.SourceSans
+attackButton.TextSize = 16
+attackButton.Text = "Backstab Type: Normal"
+attackButton.Parent = screenGui
+
+attackButton.MouseButton1Click:Connect(function()
+    if attackType == "Normal" then
+        attackType = "Counter"
+    elseif attackType == "Counter" then
+        attackType = "Legit"
+    elseif attackType == "Legit" then
+        attackType = "Normal"
+    end
+    attackButton.Text = "Backstab Type: " .. attackType
+
+    -- Show Match Facing button only if Legit
+    facingButton.Visible = (attackType == "Legit")
+end)
+
+
+-- Hide Button
+local hideButton = Instance.new("TextButton")
+hideButton.Size = UDim2.new(0, 50, 0, 40)
+hideButton.Position = UDim2.new(0, 165, 0, 10) -- right next to Backstab toggle
+hideButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+hideButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+hideButton.Font = Enum.Font.SourceSansBold
+hideButton.TextSize = 20
+hideButton.Text = "Hide"
+hideButton.Parent = screenGui
+
+local guiHidden = false
+local guiElements = {}
+
+-- Store all GUI elements except toggle and hideButton
+for _, obj in ipairs(screenGui:GetChildren()) do
+	if obj ~= hideButton then
+		table.insert(guiElements, obj)
+	end
+end
+
+hideButton.MouseButton1Click:Connect(function()
+	guiHidden = not guiHidden
+	hideButton.Text = guiHidden and "Show" or "Hide"
+
+	for _, obj in ipairs(guiElements) do
+		obj.Visible = not guiHidden
 	end
 end)
 
-local uiHidden=false
-local function setUIHidden(v)
-	uiHidden=v
-	root.Visible=not v
-	showBtn.Visible=v
+
+-- Animation IDs for Counter mode
+local counterAnimIDs = {
+	"126830014841198", "126355327951215", "121086746534252", "18885909645",
+	"98456918873918", "105458270463374", "83829782357897", "125403313786645",
+	"118298475669935", "82113744478546", "70371667919898", "99135633258223",
+	"97167027849946", "109230267448394", "139835501033932", "126896426760253",
+	"109667959938617", "126681776859538", "129976080405072", "121293883585738",
+	"81639435858902", "137314737492715", "92173139187970"
+}
+
+
+-- Helpers
+local function killerPlayingCounterAnim(killer)
+    local humanoid = killer:FindFirstChildOfClass("Humanoid")
+    if not humanoid or not humanoid:FindFirstChildOfClass("Animator") then return false end
+
+    for _, track in ipairs(humanoid.Animator:GetPlayingAnimationTracks()) do
+        if track.Animation and track.Animation.AnimationId then
+            local animIdNum = track.Animation.AnimationId:match("%d+")
+            for _, id in ipairs(counterAnimIDs) do
+                if tostring(animIdNum) == id then
+                    return true
+                end
+            end
+        end
+    end
+    return false
 end
-hideBtn.MouseButton1Click:Connect(function()
-	setUIHidden(true)
-end)
-showBtn.MouseButton1Click:Connect(function()
-	setUIHidden(false)
-end)
 
-local enabled=false
-local lastTarget=nil
-local range=10
-local delaySec=0.15
-local matchFacing=false
-local attackType="Normal"
-local mode="Behind"
-local daggerCooldownText=nil
-local killersFolder=workspace:WaitForChild("Players"):WaitForChild("Killers")
-local killerNames={"Jason","c00lkidd","JohnDoe","1x1x1x1","Noli"}
-local daggerRemote=ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent")
-
-local function setToggle(state)
-	enabled=state
-	toggleBtn.Text=state and "ON" or "OFF"
-	toggleBtn.BackgroundColor3=state and Color3.fromRGB(50,150,50) or Color3.fromRGB(50,50,50)
+local function isBehindTarget(hrp, targetHRP) 
+    local distance = (hrp.Position - targetHRP.Position).Magnitude 
+    if distance > range then return false end
+    if mode == "Around" then 
+        return true 
+    else 
+        local direction = -targetHRP.CFrame.LookVector 
+        local toPlayer = (hrp.Position - targetHRP.Position) 
+        return toPlayer:Dot(direction) > 0.5 
+    end
 end
-toggleBtn.MouseButton1Click:Connect(function()
-	setToggle(not enabled)
-end)
 
-local types={"Normal","Counter","Legit"}
-local typeIndex=1
-local function cycleType()
-	typeIndex=typeIndex%#types+1
-	attackType=types[typeIndex]
-	typeBtn.Text=attackType
-end
-typeBtn.MouseButton1Click:Connect(cycleType)
 
-local modes={"Behind","Around"}
-local modeIndex=1
-local function cycleMode()
-	modeIndex=modeIndex%#modes+1
-	mode=modes[modeIndex]
-	modeBtn.Text=mode
-end
-modeBtn.MouseButton1Click:Connect(cycleMode)
 
-legitBtn.MouseButton1Click:Connect(function()
-	matchFacing=not matchFacing
-	legitBtn.Text=matchFacing and "ON" or "OFF"
-	legitBtn.BackgroundColor3=matchFacing and Color3.fromRGB(50,150,50) or Color3.fromRGB(50,50,50)
-end)
-
-rangeBox.FocusLost:Connect(function()
-	local v=tonumber(rangeBox.Text)
-	if v and v>=1 then
-		range=v
-		rangeBox.Text=tostring(v)
-	else
-		rangeBox.Text=tostring(range)
-		statusText.Text="Invalid range"
-	end
-end)
-
-delayBox.FocusLost:Connect(function()
-	local v=tonumber(delayBox.Text)
-	if v and v>=0 then
-		delaySec=v
-		delayBox.Text=string.format("%.2f",v)
-	else
-		delayBox.Text=string.format("%.2f",delaySec)
-		statusText.Text="Invalid delay"
-	end
-end)
-
+-- keep daggerCooldownText up-to-date automatically
 local function refreshDaggerRef()
-	local gui=lp:FindFirstChild("PlayerGui")
-	if not gui then daggerCooldownText=nil return end
-	local mainui=gui:FindFirstChild("MainUI")
-	if mainui then
-		local ac=mainui:FindFirstChild("AbilityContainer")
-		if ac then
-			local d=ac:FindFirstChild("Dagger")
-			if d then
-				daggerCooldownText=d:FindFirstChild("CooldownTime")
-				return
-			end
+	local mainui = lp:FindFirstChild("PlayerGui"):FindFirstChild("MainUI")
+	if mainui and mainui:FindFirstChild("AbilityContainer") then
+		local dagger = mainui.AbilityContainer:FindFirstChild("Dagger")
+		if dagger and dagger:FindFirstChild("CooldownTime") then
+			daggerCooldownText = dagger.CooldownTime
+			return
 		end
 	end
-	daggerCooldownText=nil
+	daggerCooldownText = nil
 end
+
+-- reconnect whenever relevant descendants change
 lp.PlayerGui.DescendantAdded:Connect(refreshDaggerRef)
 lp.PlayerGui.DescendantRemoving:Connect(function(obj)
-	if obj==daggerCooldownText then daggerCooldownText=nil end
+	if obj == daggerCooldownText then
+		daggerCooldownText = nil
+	end
 end)
+
 refreshDaggerRef()
 
-local counterAnimIDs={
-	"126830014841198","126355327951215","121086746534252","18885909645",
-	"98456918873918","105458270463374","83829782357897","125403313786645",
-	"118298475669935","82113744478546","70371667919898","99135633258223",
-	"97167027849946","109230267448394","139835501033932","126896426760253",
-	"109667959938617","126681776859538","129976080405072","121293883585738",
-	"81639435858902","137314737492715","92173139187970"
-}
-local counterSet={}
-for _,id in ipairs(counterAnimIDs) do counterSet[id]=true end
-
-local function killerPlayingCounterAnim(model)
-	local hum=model:FindFirstChildOfClass("Humanoid"); if not hum then return false end
-	local animator=hum:FindFirstChildOfClass("Animator"); if not animator then return false end
-	for _,track in ipairs(animator:GetPlayingAnimationTracks()) do
-		if track.Animation and track.Animation.AnimationId then
-			local num=tostring(track.Animation.AnimationId:match("%d+") or "")
-			if counterSet[num] then return true end
-		end
-	end
-	return false
-end
-
-local function isBehindTarget(hrp,targetHRP)
-	local distance=(hrp.Position-targetHRP.Position).Magnitude
-	if distance>range then return false end
-	if mode=="Around" then return true else
-	local dir=-targetHRP.CFrame.LookVector
-		local toP=(hrp.Position-targetHRP.Position)
-		return toP:Dot(dir) < -0.5
-	end
-end
-
-local function nearestKiller(hrp)
-	local best=nil
-	local bestDist=math.huge
-	for _,name in ipairs(killerNames) do
-		local m=killersFolder:FindFirstChild(name)
-		if m then
-			local h=m:FindFirstChild("HumanoidRootPart")
-			if h then
-				local d=(h.Position-hrp.Position).Magnitude
-				if d<bestDist then
-					bestDist=d
-					best=m
-				end
-			end
-		end
-	end
-	return best,bestDist
-end
-
-local lastFire=0
-
 RunService.RenderStepped:Connect(function()
-	if not enabled then return end
-	if not daggerCooldownText or not daggerCooldownText.Parent then return end
-	if tonumber(daggerCooldownText.Text) then return end
-	local char=lp.Character; if not char then return end
-	local hrp=char:FindFirstChild("HumanoidRootPart"); if not hrp then return end
-	if (tick()-lastFire)<delaySec then return end
+    if not daggerCooldownText or not daggerCooldownText.Parent then
+        return
+    end
+    
 
-	if attackType=="Legit" then
-		local k,dist=nearestKiller(hrp)
-		if not k then return end
-		local kHRP=k:FindFirstChild("HumanoidRootPart"); if not kHRP then return end
-		if dist<=range then
-			if matchFacing then
-				hrp.CFrame=CFrame.new(hrp.Position,hrp.Position+kHRP.CFrame.LookVector)
-			end
-			if mode=="Behind" then
-				local dirTo=(kHRP.Position-hrp.Position).Unit
-				local dot=hrp.CFrame.LookVector:Dot(dirTo)
-				if dot>0.6 then
-					statusText.Text="Blocked: target not behind"
-					return
-				end
-			end
-			ReplicatedStorage.Modules.Network.RemoteEvent:FireServer("UseActorAbility","Dagger")
-			lastFire=tick()
-			statusText.Text="Stab (Legit)"
-		end
-		return
-	end
+    if tonumber(daggerCooldownText.Text) then
+        return -- still on cooldown
+    end
 
-	for _,name in ipairs(killerNames) do
-		local killer=killersFolder:FindFirstChild(name)
-		if killer then
-			local kHRP=killer:FindFirstChild("HumanoidRootPart")
-			if kHRP then
-				if attackType=="Counter" and not killerPlayingCounterAnim(killer) then
-					continue
-				end
-				if isBehindTarget(hrp,kHRP) and killer~=lastTarget then
-					lastTarget=killer
-					local start=tick()
-					local did=false
-					local hb
-					hb=RunService.Heartbeat:Connect(function()
-						if not char or not char.Parent or not kHRP or not kHRP.Parent then if hb then hb:Disconnect() end return end
-						if (tick()-start)>=0.5 then if hb then hb:Disconnect() end return end
-						local ping=tonumber(Stats.Network.ServerStatsItem["Data Ping"]:GetValueString():match("%d+")) or 50
-						local ps=ping/1000
-						local vel=kHRP.Velocity
-						local moveDir=vel.Magnitude>0.1 and vel.Unit or Vector3.new()
-						local off=moveDir*(ps*vel.Magnitude)
-						local predicted=kHRP.Position+off
-						local tpos
-						if mode=="Behind" then
-							tpos=predicted-(kHRP.CFrame.LookVector*0.3)
-						else
-							local rightVec=kHRP.CFrame.RightVector
-							local rel=(hrp.Position-kHRP.Position)
-							local lateralSpeed=vel:Dot(rightVec)
-							local baseOffset=(rel.Magnitude>0.1) and rel.Unit*0.3 or Vector3.new()
-							local lateralOffset=rightVec*lateralSpeed*0.3
-							tpos=predicted+baseOffset+lateralOffset
-						end
-						hrp.CFrame=CFrame.new(tpos,tpos+kHRP.CFrame.LookVector)
-						if not did then
-							did=true
-							ReplicatedStorage.Modules.Network.RemoteEvent:FireServer("UseActorAbility","Dagger")
-							lastFire=tick()
-							statusText.Text="Stab ("..attackType..")"
-						end
-					end)
-					task.spawn(function()
+    if not enabled or cooldown then return end
+    
+	local char = lp.Character
+	if not (char and char:FindFirstChild("HumanoidRootPart")) then return end
+	local hrp = char.HumanoidRootPart
+	local stats = game:GetService("Stats")
+	
+	for _, name in ipairs(killerNames) do
+		local killer = killersFolder:FindFirstChild(name)
+		if killer and killer:FindFirstChild("HumanoidRootPart") then
+			local kHRP = killer.HumanoidRootPart
+
+            if attackType == "Legit" then
+                local dist = (kHRP.Position - hrp.Position).Magnitude
+                if dist <= range then
+                    -- Optional facing alignment
+                    if matchFacing then
+                        hrp.CFrame = CFrame.new(hrp.Position, hrp.Position + kHRP.CFrame.LookVector)
+                    end
+                    if mode == "Behind" then
+                        local directionToTarget = (kHRP.Position - hrp.Position).Unit
+                        local dot = hrp.CFrame.LookVector:Dot(directionToTarget)
+                        if dot < -0.6 then -- target is in front
+                            return
+                        end
+                    end
+                    daggerRemote:FireServer("UseActorAbility", "Dagger")
+                end
+                return -- skip TP logic
+            end
+
+            if attackType == "Counter" and not killerPlayingCounterAnim(killer) then
+            	continue
+            end
+			if isBehindTarget(hrp, kHRP) and killer ~= lastTarget then
+				cooldown = true
+				lastTarget = killer
+
+				local start = tick()
+				local didDagger = false
+				local connection
+				connection = RunService.Heartbeat:Connect(function()
+					if not (char and char.Parent and kHRP and kHRP.Parent) then
+						if connection then connection:Disconnect() end
+						return
+					end
+
+					local elapsed = tick() - start
+					if elapsed >= 0.5 then
+						if connection then connection:Disconnect() end
+						return
+					end
+
+					-- LIVE Ping + velocity prediction
+					local ping = tonumber(stats.Network.ServerStatsItem["Data Ping"]:GetValueString():match("%d+")) or 50
+					local pingSeconds = ping / 1000
+					local killerVelocity = kHRP.Velocity
+					local moveDir = killerVelocity.Magnitude > 0.1 and killerVelocity.Unit or Vector3.new()
+					local pingOffset = moveDir * (pingSeconds * killerVelocity.Magnitude)
+					local predictedPos = kHRP.Position + pingOffset
+
+					-- Apply mode logic with improved "Around" handling
+					local targetPos
+					if mode == "Behind" then
+						targetPos = predictedPos - (kHRP.CFrame.LookVector * 0.3)
+					elseif mode == "Around" then
+						local lookVec = kHRP.CFrame.LookVector
+						local rightVec = kHRP.CFrame.RightVector
+						local rel = (hrp.Position - kHRP.Position)
+						local lateralSpeed = killerVelocity:Dot(rightVec)
+						
+						local baseOffset = (rel.Magnitude > 0.1) and rel.Unit * 0.3 or Vector3.new()
+						local lateralOffset = rightVec * lateralSpeed * 0.3
+
+						targetPos = predictedPos + baseOffset + lateralOffset
+					end
+
+					-- Constant live TP
+					hrp.CFrame = CFrame.new(targetPos, targetPos + kHRP.CFrame.LookVector)
+
+					-- Only dagger once
+					if not didDagger then
+						didDagger = true
+
+						-- Keep aligning for 0.7s
+						local faceStart = tick()
+						local faceConn
+						faceConn = RunService.Heartbeat:Connect(function()
+							if tick() - faceStart >= 0.7 or not kHRP or not kHRP.Parent then
+								if faceConn then faceConn:Disconnect() end
+								return
+							end
+							-- Live align during window
+							local livePing = tonumber(stats.Network.ServerStatsItem["Data Ping"]:GetValueString():match("%d+")) or 50
+							local livePingSeconds = livePing / 1000
+							local liveVelocity = kHRP.Velocity
+							local liveMoveDir = liveVelocity.Magnitude > 0.1 and liveVelocity.Unit or Vector3.new()
+							local livePingOffset = liveMoveDir * (livePingSeconds * liveVelocity.Magnitude)
+							local livePredictedPos = kHRP.Position + livePingOffset
+
+							local liveTargetPos
+							if mode == "Behind" then
+								liveTargetPos = livePredictedPos - (kHRP.CFrame.LookVector * 0.3)
+							elseif mode == "Around" then
+								local lookVec = kHRP.CFrame.LookVector
+								local rightVec = kHRP.CFrame.RightVector
+								local liveRel = (hrp.Position - kHRP.Position)
+								local liveLateralSpeed = liveVelocity:Dot(rightVec)
+								
+								local baseOffset = (liveRel.Magnitude > 0.1) and liveRel.Unit * 0.3 or Vector3.new()
+								local lateralOffset = rightVec * liveLateralSpeed * 0.3
+
+								liveTargetPos = livePredictedPos + baseOffset + lateralOffset
+							end
+							hrp.CFrame = CFrame.new(liveTargetPos, liveTargetPos + kHRP.CFrame.LookVector)
+						end)
+
+						daggerRemote:FireServer("UseActorAbility", "Dagger")
+					end
+				end)
+
+				-- Reset cooldown when out of range
+				task.delay(2, function()
+					RunService.Heartbeat:Wait()
+					while isBehindTarget(hrp, kHRP) do
 						RunService.Heartbeat:Wait()
-						while kHRP and hrp and isBehindTarget(hrp,kHRP) do
-							RunService.Heartbeat:Wait()
-						end
-						lastTarget=nil
-					end)
-					break
-				end
+					end
+					lastTarget = nil
+					cooldown = false
+				end)
+				
+				break
 			end
 		end
 	end
